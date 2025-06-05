@@ -1,0 +1,17 @@
+name: todo-app
+services:
+  frontend:
+    image: node:24.1-bookworm-slim #Node.js 24.1（Debian Bookwormベースの軽量イメージ）をベースにしています。
+    working_dir: /app #作業ディレクトリを/appに設定します。以降のコマンドはこのディレクトリ内で実行されます。
+    volumes:
+      - ./frontend/app:/app #コンテナ外の./frontend/appとコンテナ内の/appを同期
+    command: npm install && npm start #node.js環境でのpackage.jsonを用いた標準的な初期設定手順
+
+  backend:
+    image: node:24.1-bookworm-slim
+    working_dir: /app
+    volumes:
+      - ./backend/app:/app
+    command: npm install && npm start
+
+  
