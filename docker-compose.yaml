@@ -5,13 +5,13 @@ services:
     working_dir: /app #作業ディレクトリを/appに設定します。以降のコマンドはこのディレクトリ内で実行されます。
     volumes:
       - ./frontend/app:/app #コンテナ外の./frontend/appとコンテナ内の/appを同期
-    command: npm install && npm start #node.js環境でのpackage.jsonを用いた標準的な初期設定手順
+    command: tail -f /dev/null #起動し続けるために何もないファイルを読み込ませ続ける
 
   backend:
     image: node:24.1-bookworm-slim
     working_dir: /app
     volumes:
       - ./backend/app:/app
-    command: npm install && npm start
+    command: tail -f /dev/null
 
   
