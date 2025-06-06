@@ -13,7 +13,7 @@ vscodeでは.mdファイルは右クリックでビューアが開く
 1. リポジトリのルートディレクトリに移動します。
 
     ```sh
-    cd /home/r23000127/todo-app
+    cd /home/<ubuntuユーザー名>/todo-app
     ```
 
 2. Docker Compose でコンテナを起動します。
