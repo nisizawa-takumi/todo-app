@@ -7,6 +7,7 @@ vscodeでは.mdファイルは右クリックでビューアが開く
 ## 前提条件
 
 - Docker および Docker Compose がインストールされていること
+- /home/<ubuntuユーザ名>/にtodo-appリポジトリを置くこととする
 
 ## 起動方法
 
@@ -112,8 +113,8 @@ docker compose up --build
 これにより、ファイルやディレクトリへのアクセス権限の問題を防ぐことができます。
 
 ```sh
-sudo chown -R <ubuntuユーザ名>:<ubuntuユーザ名> /home/r23000127/todo-app/frontend/app
-sudo chown -R <ubuntuユーザ名>:<ubuntuユーザ名> /home/r23000127/todo-app/backend/app
+sudo chown -R <ubuntuユーザ名>:<ubuntuユーザ名> /home/<ubuntuユーザ名>/todo-app/frontend/app
+sudo chown -R <ubuntuユーザ名>:<ubuntuユーザ名> /home/<ubuntuユーザ名>/todo-app/backend/app
 ```
 
 - `sudo`: 管理者権限でコマンドを実行します。
