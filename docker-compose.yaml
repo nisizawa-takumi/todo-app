@@ -2,9 +2,9 @@ name: todo-app
 services:
   frontend:
     image: node:24.1-bookworm-slim #Node.js 24.1（Debian Bookwormベースの軽量イメージ）をベースにしています。
-    working_dir: /app #作業ディレクトリを/appに設定します。以降のコマンドはこのディレクトリ内で実行されます。
+    working_dir: /container #作業ディレクトリを/containerに設定します。以降のコマンドはこのディレクトリ内で実行されます。
     volumes:
-      - ./frontend/app:/app #コンテナ外の./frontend/appとコンテナ内の/appを同期
+      - ./frontend/container:/container #コンテナ外の./frontend/containerとコンテナ内の/containerを同期
     command: tail -f /dev/null #起動し続けるために何もないファイルを読み込ませ続ける
 
   backend:
@@ -13,5 +13,3 @@ services:
     volumes:
       - ./backend/app:/app
     command: tail -f /dev/null
-
-  
