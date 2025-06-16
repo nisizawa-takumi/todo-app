@@ -1,54 +1,104 @@
-# temp めも
+# コンテナ内で行った環境構築手順(pull したものを動かすときは npm install だけでいいかも これはあくまでコンテナ内にプロジェクトが何もなかった時の初期設定手順)
 
-環境構築はもう一回ちゃんとやりたい　飛ばしすぎた
+まずコンテナに入る
 
-Next.js + Storybook + TypeScript +jest+Material UI+Playwright
-この技術で web ページ作るときに最初どうやって環境構築すればいいですか？
-3/3
-3/3
-Copilot said: Next.js + Storybook + TypeScript + Jest
-Next.js + Storybook + TypeScript + Jest + Material UI + Playwright で Web ページを作る開発環境を構築する手順を、ざっくりと順番に説明します。
+```bash
+docker compose up -d
+docker compose exec frontend bash
+```
 
-1. Next.js + TypeScript プロジェクトの作成
-   bash
-   npx create-next-app@latest my-app -e with-typescript
-   cd my-app
-2. Material UI の導入
-   bash
-   npm install @mui/material @emotion/react @emotion/styled
+以下、コンテナ内での操作
+~/container にいることを想定
 
-# 必要に応じてアイコン
+```bash
+npx create-next-app@latest
+```
 
-npm install @mui/icons-material 3. Storybook の導入
-bash
-npx storybook@latest init
-Storybook のセットアップ時に TypeScript/Next.js を自動検出してくれます。 4. Jest の導入
-Next.js 公式推奨のセットアップ方法:
+```bash
+Need to install the following packages:
+create-next-app@15.3.3
+Ok to proceed? (y) y
+✔ What is your project named? … todo-app-frontend
+✔ Would you like to use TypeScript? … No / <Yes>
+✔ Would you like to use ESLint? … No / <Yes>
+✔ Would you like to use Tailwind CSS? … <No> / Yes #MaterialUIを使うため
+✔ Would you like your code inside a `src/` directory? … No / <Yes>
+✔ Would you like to use App Router? (recommended) … No / <Yes>
+✔ Would you like to use Turbopack for `next dev`? … <No> / Yes #試験的な機能っぽい？
+✔ Would you like to customize the import alias (`@/*` by default)? … <No> / Yes
+Creating a new Next.js app in /container/todo-app-frontend.
+```
 
-bash
-npm install --save-dev jest @types/jest ts-jest babel-jest
+```bash
+cd todo-app-frontend/
+```
+
+~/container/todo-app-frontend にいることを想定
+
+```bash
+npm install @mui/material @emotion/react @emotion/styled
+npm install @mui/icons-material
+```
+
+```bash
+npm create storybook@latest
+```
+
+```bash
+Need to install the following packages:
+create-storybook@9.0.10
+Ok to proceed? (y) y
+~~
+? New to Storybook? › - Use arrow-keys. Return to submit.
+❯   Yes: Help me with onboarding
+    No: Skip onboarding & don't ask again
+✔ Do you want to manually choose a Storybook project type to install? … no
+```
+
+```bash
+npm install --save-dev jest
+npm install --save-dev @types/jest ts-jest babel-jest
 npm install --save-dev @testing-library/react @testing-library/jest-dom @testing-library/user-event
-jest.config.js または jest.config.ts を作成して、TypeScript 対応設定を追加します。 5. Playwright の導入
-bash
-npm install --save-dev playwright @playwright/test
-npx playwright install 6. 必要な設定ファイルの調整
-.storybook/main.ts の framework を @storybook/nextjs にする
-jest.config.js の testEnvironment を jsdom に設定
-Storybook や Playwright のビルド・テスト用のスクリプトを package.json に追加 7. サンプルコンポーネントと各種テストの作成
-components/ ディレクトリに簡単な MUI コンポーネントを作成
-_.stories.tsx を作り Storybook で表示
-_.test.tsx を作り Jest でユニットテスト
-Playwright で E2E テストを書く
-まとめ
-Next.js + TypeScript でプロジェクト作成
-Material UI 導入
-Storybook 初期化
-Jest セットアップ
-Playwright セットアップ
-各種設定ファイルを調整
-サンプルコード＆テストを書く
+```
 
-## 構成
+補足: copilot: プロジェクトで最新の JavaScript 機能や TypeScript を使っている場合、そのままだと Jest が理解できないコードがあるため、Babel でテスト実行時もトランスパイルする必要があります。そのため、babel-jest というアダプタを入れます。
+
+```bash
+npm init playwright@latest
+```
+
+```bash
+Need to install the following packages:
+create-playwright@1.17.136
+Ok to proceed? (y) y
+> npx
+> create-playwright
+Getting started with writing end-to-end tests with Playwright:
+Initializing project in '.'
+✔ Do you want to use TypeScript or JavaScript? · TypeScript
+✔ Where to put your end-to-end tests? · tests
+✔ Add a GitHub Actions workflow? (y/N) · true
+✔ Install Playwright browsers (can be done manually via 'npx playwright install')? (Y/n) · true
+✔ Install Playwright operating system dependencies (requires sudo / root - can be done manually via 'sudo npx playwright install-deps')? (y/N) · true
+Installing Playwright Test (npm install --save-dev @playwright/test)…
+```
+
+```bash
+npm install --save-dev concurrently # 複数のnpmスクリプトを並列実行するためのツール
+```
+
+[注:コンテナ外操作]コンテナ外(wsl)からファイルを操作できるよう、所有者を書き換え
+
+```bash
+sudo chown -R <ubuntuユーザ名>:<ubuntuユーザ名> /home/<ubuntuユーザ名>/todo-app/frontend/container
+```
+
+# 使い方
+
+コンテナを起動(docker compose up -d 等)すると、自動で開発用サーバが立ち上がります。
+http://localhost:3000/で nextjs サイト、http://localhost:6006/で storybook サイトが見れます。
+
+# 構成
 
 ```
 src/
