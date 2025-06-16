@@ -1,27 +1,28 @@
-# Todoアプリ 起動手順
+# Todo アプリ 起動手順
 
 ## 初めに
-vscodeでは.mdファイルは右クリックでビューアが開く
-わからなかったor詰まったことがあったら問題または対処結果をここに追記
+
+vscode では.md ファイルは右クリックでビューアが開く
+わからなかった or 詰まったことがあったら問題または対処結果をここに追記
 
 ## 前提条件
 
 - Docker および Docker Compose がインストールされていること
-- /home/<ubuntuユーザ名>/にtodo-appリポジトリを置くこととする
+- /home/<ubuntu ユーザ名>/に todo-app リポジトリを置くこととする
 
 ## 起動方法
 
 1. リポジトリのルートディレクトリに移動します。
 
-    ```sh
-    cd /home/<ubuntuユーザー名>/todo-app
-    ```
+   ```sh
+   cd /home/<ubuntuユーザー名>/todo-app
+   ```
 
 2. Docker Compose でコンテナを起動します。
 
-    ```sh
-    docker compose up -d
-    ```
+   ```sh
+   docker compose up -d
+   ```
 
 ## コンテナの停止
 
@@ -56,41 +57,44 @@ docker compose down
 
 ---
 
-#### Dockerデーモンへのアクセス権限がない場合
+#### Docker デーモンへのアクセス権限がない場合
 
 エラー例:  
 `permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock`
 
 **対処法:**  
-Dockerコマンドを実行するユーザーが `docker` グループに所属しているか確認してください。  
+Docker コマンドを実行するユーザーが `docker` グループに所属しているか確認してください。  
 所属していない場合は、以下のコマンドで追加し、再ログインしてください。
 
 ```sh
 sudo usermod -aG docker <ubuntuユーザー名>
 ```
+
 このコマンドは、現在のユーザーを "docker" グループに追加するためのものです。
 "docker" グループに所属することで、sudo を使わずに docker コマンドを実行できるようになります。
 <あなたのユーザー名> の部分は、実際に追加したいユーザー名（例: yourname）に置き換えてください。
 例: sudo usermod -aG docker yourname
 コマンドの意味:
-  - sudo: 管理者権限でコマンドを実行
-  - usermod: ユーザーアカウントを変更するコマンド
-  - -aG: 指定したグループにユーザーを追加（-a: 追加, -G: グループ指定）
-  - docker: 追加するグループ名
-  - <あなたのユーザー名>: 追加対象のユーザー名
-変更を反映するには、一度ログアウトして再ログインする必要があります。
-これは、Windows側のコマンドプロンプトやPowerShellで
+
+- sudo: 管理者権限でコマンドを実行
+- usermod: ユーザーアカウントを変更するコマンド
+- -aG: 指定したグループにユーザーを追加（-a: 追加, -G: グループ指定）
+- docker: 追加するグループ名
+- <あなたのユーザー名>: 追加対象のユーザー名
+  変更を反映するには、一度ログアウトして再ログインする必要があります。
+  これは、Windows 側のコマンドプロンプトや PowerShell で
+
 ```
 wsl --shutdown
 wsl
 ```
-とすればいい。
----
+
+## とすればいい。
 
 ### 3. 変更が反映されない
 
 **対処法:**  
-Dockerイメージのキャッシュが原因の場合があります。以下のコマンドで再ビルドしてください。
+Docker イメージのキャッシュが原因の場合があります。以下のコマンドで再ビルドしてください。
 
 ```sh
 docker compose up --build
@@ -101,9 +105,21 @@ docker compose up --build
 ### 4. コンテナがすぐに終了する
 
 **対処法:**  
-`docker compose logs` でログを確認し、エラー内容を特定してください。依存サービス（DBなど）が起動していない場合もあります。
+`docker compose logs` でログを確認し、エラー内容を特定してください。依存サービス（DB など）が起動していない場合もあります。
 
 ---
+
+### 5. TypeError: Invalid URL が出て npm が使えない
+
+WSL 内で win にインストールされた nodejs を使っていたためだった。
+WSL 内で nodejs をインストールして解決
+
+```bash
+sudo apt update
+sudo apt install nodejs npm
+node -v
+npm -v
+```
 
 ## その他
 
@@ -121,7 +137,3 @@ sudo chown -R <ubuntuユーザ名>:<ubuntuユーザ名> /home/<ubuntuユーザ�
 - `chown`: ファイルやディレクトリの所有者・グループを変更します。
 - `-R`: 指定したディレクトリ以下を再帰的に処理します。
 - `<ubuntuユーザ名>:<ubuntuユーザ名>`: 所有者:グループ を指定します。
-
-
-
-
