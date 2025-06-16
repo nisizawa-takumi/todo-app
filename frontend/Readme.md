@@ -1,4 +1,17 @@
-# コンテナ内で行った環境構築手順(pull したものを動かすときは npm install だけでいいかも これはあくまでコンテナ内にプロジェクトが何もなかった時の初期設定手順)
+# コンテナ起動方法
+
+リポジトリ内で、
+
+```bash
+dokcer compose up -d
+```
+
+とするだけ。自動で開発用サーバが立ち上がります。
+http://localhost:3000/で nextjs サイト、http://localhost:6006/で storybook サイトが見れます。
+frontend/container/todo-app-frontend 内のファイルを書き換えると、自動でサイトの情報も書き換わるはず。
+これでうまくいくはずだと思ってますが、行かなかった開発メンバーは連絡して
+
+# コンテナ内で行った環境構築手順メモ(pull とか clone したものを動かすときはやらなくていいはず。 これはあくまでコンテナ内にプロジェクトが何もなかった時の初期設定手順)
 
 まずコンテナに入る
 
@@ -93,19 +106,13 @@ npm install --save-dev concurrently # 複数のnpmスクリプトを並列実行
 sudo chown -R <ubuntuユーザ名>:<ubuntuユーザ名> /home/<ubuntuユーザ名>/todo-app/frontend/container
 ```
 
-# 使い方
-
-コンテナを起動(docker compose up -d 等)すると、自動で開発用サーバが立ち上がります。
-http://localhost:3000/で nextjs サイト、http://localhost:6006/で storybook サイトが見れます。
-
-# 構成
+# 構成(まだかなり雑、変わる可能性高)
 
 ```
-src/
-└── todo/
-    ├── api.js        // fetchTodos, addTodo, deleteTodo など API 通信
-    ├── logic.js      // filterTodos, validateTodo, sortTodos などロジック
-    └── rendering.js  // TodoList, TodoItem, AddTodoForm など UI
+todo/
+　├── api.js        // fetchTodos, addTodo, deleteTodo など API 通信
+　├── logic.js      // filterTodos, validateTodo, sortTodos などロジック
+　└── rendering.js  // TodoList, TodoItem, AddTodoForm など UI
 ```
 
 json-server を用いたダミー api サーバによる開発、テスト

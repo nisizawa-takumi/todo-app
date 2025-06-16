@@ -8,7 +8,7 @@ services:
     ports:
       - "3000:3000" # nextjsでの開発用ローカルサーバのポート
       - "6006:6006" # storybookでのストーリー確認サイト立ち上げのためのポート
-    command: npm run dev:all
+    command: sh -c "npm install && npm run dev:all"
 
   backend:
     image: node:24.1-bookworm-slim
