@@ -3,7 +3,7 @@
 リポジトリ内で、
 
 ```bash
-dokcer compose up -d
+dockcer compose up -d
 ```
 
 とするだけ。自動で開発用サーバが立ち上がります。
