@@ -1,33 +1,59 @@
 "use client";
-import React, { useState, Fragment } from "react";
-import Task, { TaskData } from "./todoModules/Task";
-import AddTaskButton from "./todoModules/AddTaskButton";
+import React, { useState, useEffect, Fragment } from "react";
+import TodoItem from "@/components/todoModules/TodoItem";
+import AddTaskButton from "@/components/todoModules/AddTaskButton";
+import { fetchTodoList, TodoType } from "@/lib/todo/apiClient";
+import LoadingSpinner from "@/components/utilModules/LoadingSpinner";
 
 export default function ToDoList() {
-  const [tasks, setTasks] = useState<TaskData[]>([
-    { id: "1", title: "買い物に行く" },
-    { id: "2", title: "勉強する" },
-  ]);
-  const changeTitle = (id: string, newTitle: string) => {
-    setTasks((tasks) => tasks.map((task) => (task.id === id ? { ...task, title: newTitle } : task)));
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [todoList, addTodoLocal] = useState<TodoType[]>([]);
+  const updateOneLocal = (newTodo: TodoType) => {
+    //react内のtodoListステートを変更する。DBと同期していないことに注意
+    addTodoLocal((todoList) => todoList.map((todo) => (todo.id === newTodo.id ? { ...newTodo } : todo)));
   };
-  const deleteTask = (id: string) => {
-    setTasks((tasks) => tasks.filter((task) => task.id !== id));
+  const deleteOne = (id: string) => {
+    addTodoLocal((tasks) => tasks.filter((task) => task.id !== id));
   };
-  const [tasksView, sync] = useState<TaskData[]>([]);
-  const update = (tasks: TaskData[]) => sync(tasks);
+  const [remoteTodoList, syncRemoteTodoList] = useState<TodoType[]>([]);
+  const updateRemoteView = (tasks: TodoType[]) => syncRemoteTodoList(tasks);
+  useEffect(() => {
+    (async () => {
+      const todos = await fetchTodoList();
+      addTodoLocal(todos);
+    })() //※ 即時実行関数(IIFE: Immediately Invoked Function Expression)
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []); //※ ここはリロード時に実行(useEffectの第二引数に空配列を置くとそうなる)
+  if (error) {
+    return (
+      <>
+        <div>申し訳ありません。ToDo表示においてエラーが発生しました。</div>
+        <div>問題はページの更新によって解決する場合があります。</div>
+        <div>詳しくは以下のエラーメッセージを参照してください: </div>
+        <div>{error}</div>
+      </>
+    );
+  } else if (loading) {
+    return <LoadingSpinner variant="cute" />;
+  }
   return (
     <>
-      {tasks.map((task) => (
-        <Fragment key={task.id}>
-          <Task task={task} changeTitle={changeTitle} />
-          <button onClick={() => deleteTask(task.id)}>削除</button>
+      {todoList.map((todo) => (
+        <Fragment key={todo.id}>
+          <TodoItem data={todo} updateOneLocal={updateOneLocal} deleteOne={deleteOne} />
         </Fragment>
       ))}
-      <AddTaskButton setTasks={setTasks} />
-      <div onClick={() => update(tasks)}>
-        <div>同期:</div>
-        {tasksView.map((task) => `${task.id}: ${task.title}`).join(", ")}
+      <AddTaskButton addTodoLocal={addTodoLocal} />
+      <div
+        onClick={() => {
+          updateRemoteView(todoList);
+          // updateTodoList(todoList);
+        }}
+      >
+        <div>DB同期:</div>
+        履歴{remoteTodoList.map((todo) => `${todo.id}: ${todo.title}`).join("\n")}
       </div>
     </>
   );
