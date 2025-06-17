@@ -7,7 +7,7 @@ vscode では.md ファイルは右クリックでビューアが開く
 
 ## 前提条件
 
-- Docker および Docker Compose がインストールされていること
+- WSL の Ubuntu 内で Docker および Docker Compose がインストールされていること
 - /home/<ubuntu ユーザ名>/に todo-app リポジトリを置くこととする
 
 ## 起動方法
