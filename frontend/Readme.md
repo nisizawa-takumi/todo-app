@@ -108,7 +108,10 @@ sudo chown -R <ubuntuユーザ名>:<ubuntuユーザ名> /home/<ubuntuユーザ�
 
 ## 後から追加したもの
 
+```bash
 npm install --save-dev json-server
+npm install uuid
+```
 
 # 構成(まだかなり雑、変わる可能性高)
 

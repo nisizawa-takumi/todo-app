@@ -422,3 +422,29 @@ observer.observe(document.getElementById("myElement"));
 ```
 
 React でも、ref で取得した要素に対して使うことができます。
+
+# MUI のクラス名と Emotion によるカスタマイズについて
+
+## Q. Material-UI（MUI）のコンポーネントのデザインはどのようにカスタマイズできますか？
+
+A.  
+Material-UI（MUI）は各コンポーネントの内部要素に、`.MuiInputBase-root` や `.MuiInputBase-input` などのクラス名を自動で付与しています。  
+Emotion や CSS Modules などの CSS-in-JS ライブラリを使えば、これらのクラス名をターゲットにしてスタイルを上書きできます。
+
+例えば、以下のように書くことで MUI のデフォルトデザインを柔軟にカスタマイズできます。
+
+```js
+css`
+  .MuiInputBase-root { ... }
+  .MuiInputBase-input { ... }
+  .MuiInputLabel-root { ... }
+`;
+```
+
+## Q. カスタマイズ時のポイントは？
+
+A.
+
+- MUI のクラス名は公式ドキュメントやブラウザの開発者ツールで確認できます。
+- Emotion の css でラップした親要素内に限定して、これらのクラスを上書きできるので、他の場所に影響しません。
+- この仕組みを使えば、MUI のコンポーネントも自分好みにデザインできます！

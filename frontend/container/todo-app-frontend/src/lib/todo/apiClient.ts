@@ -5,7 +5,6 @@ export type TodoType = {
   description: string; // 詳細説明
   completed: boolean; // 完了フラグ
   priority: string; // 優先度（例: "high", "medium", "low"）
-  tags: string[]; // タグの配列
   due_date: string; // 期限日（ISO8601形式の文字列）
 };
 
@@ -70,7 +69,7 @@ export async function updateTodo(id: string, todo: Partial<TodoType>): Promise<T
  * DELETE /api/todos/:id
  * @param id 削除対象のTodoのID
  */
-export async function deleteTodo(id: number): Promise<void> {
+export async function deleteTodo(id: string): Promise<void> {
   // fetchでDELETEリクエスト
   const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
   // レスポンスが正常でなければエラー

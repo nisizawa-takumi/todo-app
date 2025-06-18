@@ -10,10 +10,7 @@ type FooterProps = {
 
 const Footer: React.FC<FooterProps> = ({ height = FOOTER_HEIGHT }) => {
   return (
-    <AppBar
-      position="static"
-      sx={{ top: "auto", bottom: 0, display: "flex", justifyContent: "center", height: height }}
-    >
+    <AppBar position="fixed" sx={{ top: "auto", bottom: 0, display: "flex", justifyContent: "center", height: height }}>
       <Toolbar sx={{ justifyContent: "center" }}>
         <Typography variant="body2" component="div" sx={{ justifyContent: "center" }}>
           閲覧日時: {new Date().toLocaleString()}

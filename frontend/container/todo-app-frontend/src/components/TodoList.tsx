@@ -3,25 +3,31 @@ import React, { useState, useEffect, Fragment } from "react";
 import TodoItem from "@/components/todoModules/TodoItem";
 import AddTaskButton from "@/components/todoModules/AddTaskButton";
 import { fetchTodoList, TodoType } from "@/lib/todo/apiClient";
+import { MOCK_syncTodoListWithDB } from "../../mocks/expandedJsonServerApi";
 import LoadingSpinner from "@/components/utilModules/LoadingSpinner";
 
 export default function ToDoList() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [todoList, addTodoLocal] = useState<TodoType[]>([]);
+  const [clientTodoList, updateTodoLocal] = useState<TodoType[]>([]);
   const updateOneLocal = (newTodo: TodoType) => {
     //react内のtodoListステートを変更する。DBと同期していないことに注意
-    addTodoLocal((todoList) => todoList.map((todo) => (todo.id === newTodo.id ? { ...newTodo } : todo)));
+    updateTodoLocal((todoList) => todoList.map((todo) => (todo.id === newTodo.id ? { ...newTodo } : todo)));
+  };
+  const addTodoLocal = (newTodo: TodoType) => {
+    //react内のtodoListステートを変更する。DBと同期していないことに注意
+    updateTodoLocal((todoList) => [...todoList, newTodo]);
   };
   const deleteOne = (id: string) => {
-    addTodoLocal((tasks) => tasks.filter((task) => task.id !== id));
+    //react内のtodoListステートを変更する。DBと同期していないことに注意
+    updateTodoLocal((tasks) => tasks.filter((task) => task.id !== id));
   };
   const [remoteTodoList, syncRemoteTodoList] = useState<TodoType[]>([]);
   const updateRemoteView = (tasks: TodoType[]) => syncRemoteTodoList(tasks);
   useEffect(() => {
     (async () => {
       const todos = await fetchTodoList();
-      addTodoLocal(todos);
+      updateTodoLocal(todos);
     })() //※ 即時実行関数(IIFE: Immediately Invoked Function Expression)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -40,16 +46,16 @@ export default function ToDoList() {
   }
   return (
     <>
-      {todoList.map((todo) => (
+      {clientTodoList.map((todo) => (
         <Fragment key={todo.id}>
           <TodoItem data={todo} updateOneLocal={updateOneLocal} deleteOne={deleteOne} />
         </Fragment>
       ))}
       <AddTaskButton addTodoLocal={addTodoLocal} />
       <div
-        onClick={() => {
-          updateRemoteView(todoList);
-          // updateTodoList(todoList);
+        onClick={async () => {
+          updateRemoteView(clientTodoList);
+          updateTodoLocal(await MOCK_syncTodoListWithDB(clientTodoList));
         }}
       >
         <div>DB同期:</div>
