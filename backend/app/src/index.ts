@@ -1,6 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import express from 'express';
 import cors from 'cors';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { Request, Response, NextFunction } from 'express';
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -105,6 +108,88 @@ app.delete("/deleteTodo/:id", async (req, res) => {
     }
 });
 
+// JWT認証用にRequest型を拡張
+interface AuthRequest extends Request {
+    user?: any;
+}
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+
+function authenticateToken(req: AuthRequest, res: Response, next: NextFunction) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'トークンがありません' });
+    jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+        if (err) return res.status(403).json({ error: 'トークンが無効です' });
+        req.user = user;
+        next();
+    });
+}
+
+app.post('/register', async (req, res) => {
+    const { email, password, role } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ error: 'emailとpasswordは必須です' });
+    }
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = await prisma.user.create({
+            data: {
+                email,
+                password: hashedPassword,
+                role: role || 'user'
+            }
+        });
+        res.json({ message: '登録完了', user: { id: user.id, email: user.email, role: user.role } });
+    } catch (e) {
+        res.status(400).json({ error: '登録失敗', detail: e });
+    }
+});
+
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ error: 'emailとpasswordは必須です' });
+    }
+    try {
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (!user) return res.status(401).json({ error: 'ユーザーが見つかりません' });
+
+        const isValid = await bcrypt.compare(password, user.password);
+        if (!isValid) return res.status(401).json({ error: 'パスワードが違います' });
+
+        const token = jwt.sign(
+            { userId: user.id, role: user.role },
+            JWT_SECRET,
+            { expiresIn: '1d' }
+        );
+        res.json({ token });
+    } catch (e) {
+        res.status(400).json({ error: 'ログイン失敗', detail: e });
+    }
+});
+
+// 例: 認証が必要なAPI
+app.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => {
+    const user = await prisma.user.findUnique({ where: { id: req.user.userId } });
+    if (!user) return res.status(404).json({ error: 'ユーザーが見つかりません' });
+    res.json({ id: user.id, email: user.email, role: user.role });
+});
+
+// 認可（ロール分岐）ミドルウェア
+function authorizeRole(role: string) {
+    return (req: AuthRequest, res: Response, next: NextFunction) => {
+        if (!req.user || req.user.role !== role) {
+            return res.status(403).json({ error: '権限がありません' });
+        }
+        next();
+    };
+}
+
+// 例: adminロールのみアクセス可能なエンドポイント
+app.get('/admin/secret', authenticateToken, authorizeRole('admin'), (req: AuthRequest, res: Response) => {
+    res.json({ message: '管理者専用の情報です' });
+});
 
 if (require.main === module) {
     app.listen(port, () => {
