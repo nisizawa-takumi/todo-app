@@ -7,7 +7,9 @@ const port = process.env.PORT || 4000;
 const prisma = new PrismaClient();
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000' // フロントエンドのURL
+}));
 
 app.get('/allTodos', async (req, res) => {
     try {
@@ -104,6 +106,10 @@ app.delete("/deleteTodo/:id", async (req, res) => {
 });
 
 
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-});
+if (require.main === module) {
+    app.listen(port, () => {
+        console.log(`Server is running on port ${port}`);
+    });
+}
+
+export default app;
