@@ -22,7 +22,7 @@ const todoTransition = css`
   }
   .todo-exit {
     opacity: 1;
-    height: 373px; /* TodoItemの高さに合わせて調整 */
+    height: 232px; /* TodoItemの高さに合わせて調整 */
     overflow: hidden;
     margin-bottom: 16px; /* 必要なら */
     padding: 0 0;
