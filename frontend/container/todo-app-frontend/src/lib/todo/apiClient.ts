@@ -4,7 +4,7 @@ export type TodoType = {
   title: string; // タイトル
   description: string; // 詳細説明
   completed: boolean; // 完了フラグ
-  priority: string; // 優先度（例: "high", "medium", "low"）
+  priority: "high" | "medium" | "low"; // 優先度（"high", "medium", "low" の3択）
   due_date: string; // 期限日（ISO8601形式の文字列）
 };
 

@@ -37,7 +37,7 @@ const coolStyle = css`
   margin-top: 8px;
   margin-bottom: 8px;
   width: 100%;
-  background: linear-gradient(90deg, #232946 0%, #1a1a2e 100%);
+  background: linear-gradient(90deg, rgb(204, 31, 31) 0%, #1a1a2e 100%);
   border-radius: 12px;
   padding: 2px 0 2px 0;
   box-shadow: 0 2px 8px rgba(34, 25, 70, 0.18);
@@ -89,12 +89,18 @@ const getInputStyle = (variant: "outlined" | "filled" | "standard" | "cool") => 
       return outlinedStyle;
   }
 };
+const getTextFieldVariant = (
+  variant: "outlined" | "filled" | "standard" | "cool"
+): "outlined" | "filled" | "standard" => {
+  if (variant === "cool") return "outlined";
+  return variant;
+};
 
 const TodoTitle: React.FC<Props> = ({ todoItem, updateOneLocal, variant = "standard" }) => (
   <div css={getInputStyle(variant)}>
     <TextField
       label="タイトル"
-      variant={variant === "cool" ? "outlined" : variant}
+      variant={getTextFieldVariant(variant)}
       value={todoItem.title}
       name="title"
       id={`title-${todoItem.id}`}

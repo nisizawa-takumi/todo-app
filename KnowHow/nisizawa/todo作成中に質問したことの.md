@@ -448,3 +448,70 @@ A.
 - MUI のクラス名は公式ドキュメントやブラウザの開発者ツールで確認できます。
 - Emotion の css でラップした親要素内に限定して、これらのクラスを上書きできるので、他の場所に影響しません。
 - この仕組みを使えば、MUI のコンポーネントも自分好みにデザインできます！
+
+```js
+const priorityElement = form.elements.namedItem("priority") as HTMLInputElement;
+        const rawPriorityValue = priorityElement.value.trim();
+        const allowedPriorities = ["high", "medium", "low"] as const;
+        type Priority = typeof allowedPriorities[number];
+
+        function isPriority(value: string): value is Priority {
+          return allowedPriorities.includes(value as Priority);
+        }
+
+        const priorityValue: Priority = isPriority(rawPriorityValue)
+          ? rawPriorityValue
+          : "medium";
+```
+
+---
+
+## Q. `.includes()` の引数は `string` 型で問題ないのでは？
+
+A.  
+ご指摘の通り、`.includes()` の引数は `string` 型で問題ありません。  
+TypeScript の型エラーは、`allowedPriorities.includes(rawPriorityValue)` の返り値が `boolean` であるにもかかわらず、`as "high" | "medium" | "low"` で型アサーションしている部分で発生しています。
+
+---
+
+## Q. 型安全に `"high" | "medium" | "low"` へ変換するには？
+
+A.  
+型安全にするには型ガード関数を使うのがベストです。
+
+```typescript
+// ...existing code...
+const allowedPriorities = ["high", "medium", "low"] as const;
+type Priority = (typeof allowedPriorities)[number];
+
+function isPriority(value: string): value is Priority {
+  return allowedPriorities.includes(value as Priority);
+}
+// ...existing code...
+const priorityValue: Priority = isPriority(rawPriorityValue) ? rawPriorityValue : "medium";
+// ...existing code...
+```
+
+こうすることで、型エラーが解消され、型安全も保たれます。
+
+---
+
+## Q. 型ガード関数とは何ですか？
+
+A.  
+型ガード関数とは、TypeScript で「ある値が特定の型であるかどうか」を判定し、`true` の場合はその型であることを型システムに伝える（絞り込む）ための関数です。
+
+### 例
+
+```typescript
+function isPriority(value: string): value is "high" | "medium" | "low" {
+  return ["high", "medium", "low"].includes(value as any);
+}
+```
+
+この関数は、`value` が `"high"`・`"medium"`・`"low"` のいずれかなら `true` を返し、  
+TypeScript は `true` の場合に `value` の型を `"high" | "medium" | "low"` として扱います。
+
+### 型ガード関数の特徴
+
+- 戻り値の型が `value is 型` という形になっている

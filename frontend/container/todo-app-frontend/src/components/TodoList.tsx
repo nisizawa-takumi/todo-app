@@ -1,15 +1,22 @@
 "use client";
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect, Fragment, useRef } from "react";
 import TodoItem from "@/components/todoModules/TodoItem";
 import AddTaskButton from "@/components/todoModules/AddTaskButton";
 import { fetchTodoList, TodoType } from "@/lib/todo/apiClient";
 import { MOCK_syncTodoListWithDB } from "../../mocks/expandedJsonServerApi";
 import LoadingSpinner from "@/components/utilModules/LoadingSpinner";
-
+import "./todoTransition.css";
+import { TransitionGroup, CSSTransition } from "react-transition-group";
 export default function ToDoList() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [clientTodoList, updateTodoLocal] = useState<TodoType[]>([]);
+  const nodeRefs = useRef<{ [key: string]: React.RefObject<HTMLDivElement | null> }>({});
+  clientTodoList.forEach((todo) => {
+    if (!nodeRefs.current[todo.id]) {
+      nodeRefs.current[todo.id] = React.createRef<HTMLDivElement>();
+    }
+  });
   const updateOneLocal = (newTodo: TodoType) => {
     //react内のtodoListステートを変更する。DBと同期していないことに注意
     updateTodoLocal((todoList) => todoList.map((todo) => (todo.id === newTodo.id ? { ...newTodo } : todo)));
@@ -18,7 +25,7 @@ export default function ToDoList() {
     //react内のtodoListステートを変更する。DBと同期していないことに注意
     updateTodoLocal((todoList) => [...todoList, newTodo]);
   };
-  const deleteOne = (id: string) => {
+  const deleteOneLocal = (id: string) => {
     //react内のtodoListステートを変更する。DBと同期していないことに注意
     updateTodoLocal((tasks) => tasks.filter((task) => task.id !== id));
   };
@@ -46,11 +53,20 @@ export default function ToDoList() {
   }
   return (
     <>
-      {clientTodoList.map((todo) => (
+      {/* {clientTodoList.map((todo) => (
         <Fragment key={todo.id}>
-          <TodoItem data={todo} updateOneLocal={updateOneLocal} deleteOne={deleteOne} />
+          <TodoItem data={todo} updateOneLocal={updateOneLocal} deleteOneLocal={deleteOneLocal} />
         </Fragment>
-      ))}
+      ))} */}
+      <TransitionGroup component={null}>
+        {clientTodoList.map((todo) => (
+          <CSSTransition key={todo.id} timeout={1000} classNames="todo" nodeRef={nodeRefs.current[todo.id]}>
+            <div ref={nodeRefs.current[todo.id]}>
+              <TodoItem data={todo} updateOneLocal={updateOneLocal} deleteOneLocal={deleteOneLocal} />
+            </div>
+          </CSSTransition>
+        ))}
+      </TransitionGroup>
       <AddTaskButton addTodoLocal={addTodoLocal} />
       <div
         onClick={async () => {

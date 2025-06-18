@@ -129,7 +129,7 @@ const sizeStyle = {
   `,
 };
 
-const CompletedCheckbox: React.FC<CompletedCheckboxProps> = ({
+const TodoCompleted: React.FC<CompletedCheckboxProps> = ({
   todoItem,
   updateOneLocal,
   variant = "outlined",
@@ -154,4 +154,4 @@ const CompletedCheckbox: React.FC<CompletedCheckboxProps> = ({
   </div>
 );
 
-export default CompletedCheckbox;
+export default TodoCompleted;
