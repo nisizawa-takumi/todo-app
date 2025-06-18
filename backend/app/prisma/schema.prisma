@@ -11,7 +11,10 @@ datasource db {
 }
 
 model Todo {
-  id Int @id @default(autoincrement())
-  title String
-  isCompleted Boolean @default(false)
+  id          String   @id @default(uuid()) // 文字列型の一意ID
+  title       String
+  description String
+  completed   Boolean  @default(false)
+  priority    String
+  due_date    DateTime // 期限日
 }
