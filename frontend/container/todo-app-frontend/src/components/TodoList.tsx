@@ -1,3 +1,4 @@
+/** @jsxImportSource @emotion/react */
 "use client";
 import React, { useState, useEffect, Fragment, useRef } from "react";
 import TodoItem from "@/components/todoModules/TodoItem";
@@ -5,8 +6,36 @@ import AddTaskButton from "@/components/todoModules/AddTaskButton";
 import { fetchTodoList, TodoType } from "@/lib/todo/apiClient";
 import { MOCK_syncTodoListWithDB } from "../../mocks/expandedJsonServerApi";
 import LoadingSpinner from "@/components/utilModules/LoadingSpinner";
-import "./todoTransition.css";
+//import "./todoTransition.css";
 import { TransitionGroup, CSSTransition } from "react-transition-group";
+import { css } from "@emotion/react";
+
+const todoTransition = css`
+  .todo-enter {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  .todo-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 1000ms, transform 1000ms;
+  }
+  .todo-exit {
+    opacity: 1;
+    height: 373px; /* TodoItemの高さに合わせて調整 */
+    overflow: hidden;
+    margin-bottom: 16px; /* 必要なら */
+    padding: 0 0;
+  }
+  .todo-exit-active {
+    opacity: 0;
+    height: 0;
+    margin-bottom: 0;
+    padding: 0 0;
+    transition: opacity 1000ms, height 1000ms, margin 1000ms, padding 1000ms;
+  }
+`;
+
 export default function ToDoList() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -58,15 +87,17 @@ export default function ToDoList() {
           <TodoItem data={todo} updateOneLocal={updateOneLocal} deleteOneLocal={deleteOneLocal} />
         </Fragment>
       ))} */}
-      <TransitionGroup component={null}>
-        {clientTodoList.map((todo) => (
-          <CSSTransition key={todo.id} timeout={1000} classNames="todo" nodeRef={nodeRefs.current[todo.id]}>
-            <div ref={nodeRefs.current[todo.id]}>
-              <TodoItem data={todo} updateOneLocal={updateOneLocal} deleteOneLocal={deleteOneLocal} />
-            </div>
-          </CSSTransition>
-        ))}
-      </TransitionGroup>
+      <span css={todoTransition}>
+        <TransitionGroup component={null}>
+          {clientTodoList.map((todo) => (
+            <CSSTransition key={todo.id} timeout={1000} classNames="todo" nodeRef={nodeRefs.current[todo.id]}>
+              <div ref={nodeRefs.current[todo.id]}>
+                <TodoItem data={todo} updateOneLocal={updateOneLocal} deleteOneLocal={deleteOneLocal} />
+              </div>
+            </CSSTransition>
+          ))}
+        </TransitionGroup>
+      </span>
       <AddTaskButton addTodoLocal={addTodoLocal} />
       <div
         onClick={async () => {

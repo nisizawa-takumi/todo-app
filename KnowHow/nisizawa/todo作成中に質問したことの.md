@@ -515,3 +515,133 @@ TypeScript は `true` の場合に `value` の型を `"high" | "medium" | "low"`
 ### 型ガード関数の特徴
 
 - 戻り値の型が `value is 型` という形になっている
+
+## Q: React コンポーネントの削除時に連続的なアニメーションを与える実装の動作原理を解説してください
+
+### A:
+
+この実装は、React で TODO リストのアイテムを削除（または追加）するときに、連続的で自然なアニメーション効果を与えるものです。  
+主に [`react-transition-group`](https://reactcommunity.org/react-transition-group/) の `TransitionGroup` と `CSSTransition` を活用し、Emotion の css でアニメーション用の CSS クラスを定義しています。
+
+---
+
+#### 1. TransitionGroup & CSSTransition
+
+- **TransitionGroup**  
+  複数の子要素（ここでは TODO アイテム）をラップし、追加・削除時にアニメーションが適用できるようにします。
+
+- **CSSTransition**  
+  個々の子要素（TODO アイテム）のマウント/アンマウント時に、指定クラス（`classNames="todo"`）を付与します。  
+  これにより、DOM のライフサイクルに合わせて、下記のクラスが自動的に付与/削除されます。
+
+  - `.todo-enter` → `.todo-enter-active`（追加時）
+  - `.todo-exit` → `.todo-exit-active`（削除時）
+
+---
+
+#### 2. アニメーション用 CSS
+
+```js
+const todoTransition = css`
+  .todo-enter {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  .todo-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 1000ms, transform 1000ms;
+  }
+  .todo-exit {
+    opacity: 1;
+    height: 373px; /* TodoItemの高さに合わせて調整 */
+    overflow: hidden;
+    margin-bottom: 16px; /* 必要なら */
+    padding: 0 0;
+  }
+  .todo-exit-active {
+    opacity: 0;
+    height: 0;
+    margin-bottom: 0;
+    padding: 0 0;
+    transition: opacity 1000ms, height 1000ms, margin 1000ms, padding 1000ms;
+  }
+`;
+```
+
+- **追加時（マウント時）**  
+  新しいアイテムが追加されると、最初は`.todo-enter`（透明でちょっと下）から始まり、すぐに`.todo-enter-active`（不透明、通常位置、トランジションあり）に変わります。  
+  →「下からふわっと現れる」アニメーション
+
+- **削除時（アンマウント時）**  
+  アイテム削除時はまず`.todo-exit`（不透明で通常の高さ）になり、すぐに`.todo-exit-active`（透明、高さ 0、マージン 0、トランジションあり）へ。  
+  →「透明になりながら高さが 0 になって滑らかに消える」アニメーション
+
+---
+
+#### 3. nodeRef の理由
+
+- `CSSTransition`の`nodeRef`を使うことで、React 18 以降の「ref 警告」を回避しています。
+- 各 TODO ごとに異なる ref（`nodeRefs.current[todo.id]`）を割り当てているのは、アニメーションの管理のためです。
+
+---
+
+#### まとめ
+
+- アニメーションしたい要素を`CSSTransition`でラップ
+- `classNames`で CSS クラスが自動付与され、Emotion で定義したアニメーション CSS が適用
+- 追加・削除イベントごとに DOM クラスが遷移し、CSS のトランジションで滑らかに状態変化
+- ref 管理で安定した DOM 操作
+
+---
+
+#### 補足
+
+- `height: 373px`は TODO アイテムの高さに合わせて手動指定しています（Auto Height トランジション対応が難しいため）。
+- `TransitionGroup`の`component={null}`により、ラップ用の不要な DOM が挿入されません。
+- `span`に`css={todoTransition}`を当てることで、この範囲内のアニメーションクラスだけにスタイルが適用されます。
+
+---
+
+## Q: React 18 以降の「ref 警告」とは？
+
+### A:
+
+React 18 以降でよく話題になる「ref 警告」とは、**react-transition-group**などのライブラリで、  
+`CSSTransition`や`Transition`コンポーネントを使った際に表示される、以下のような警告です。
+
+#### 警告メッセージ例
+
+```
+Warning: findDOMNode is deprecated in StrictMode. findDOMNode was passed an instance of ... which is inside StrictMode.
+```
+
+#### 原因
+
+- React 18 では StrictMode が強化され、`findDOMNode` API の使用が非推奨になりました。
+- `CSSTransition`など一部のライブラリは、アニメーション対象 DOM を特定するために`findDOMNode`を内部的に使っていました。
+- しかし、React 18 以降では直接 DOM ノードを ref で取得することが推奨され、`findDOMNode`の利用に警告が出るようになっています。
+
+#### 解決策
+
+- **nodeRef プロパティの利用**  
+  `CSSTransition`や`Transition`に`nodeRef`プロパティを渡して、アニメーション対象の DOM ノード（React 要素）への ref を明示的に指定します。
+
+  ```jsx
+  const nodeRef = useRef(null);
+
+  <CSSTransition
+    nodeRef={nodeRef}
+    // ...その他のprops
+  >
+    <div ref={nodeRef}>アニメーション対象</div>
+  </CSSTransition>;
+  ```
+
+  こうすることで、`findDOMNode`を使わずにアニメーション対象 DOM ノードを取得でき、警告が出なくなります。
+
+#### まとめ
+
+- React 18 以降、「ref 警告」とは`findDOMNode`の非推奨利用に関する警告です。
+- 主にアニメーション系ライブラリで発生します。
+- `nodeRef`を使って明示的に DOM ノードを指定することで、この警告を解消できます。
