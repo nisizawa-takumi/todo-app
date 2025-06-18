@@ -99,6 +99,33 @@ const getButtonVariant = (
   return "outlined";
 };
 
+const tooltipStyle = css`
+  position: absolute;
+  top: -2.2em;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #232946;
+  color: #fff;
+  padding: 0.3em 0.8em;
+  border-radius: 8px;
+  font-size: 0.85em;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(34, 25, 70, 0.18);
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0.95;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+`;
+
+const wrapperStyle = css`
+  position: relative;
+  display: inline-block;
+  overflow: visible;
+`;
+
 const TodoDelete: React.FC<DeleteButtonProps> = ({
   todoItem,
   deleteOneLocal,
@@ -107,37 +134,63 @@ const TodoDelete: React.FC<DeleteButtonProps> = ({
   color = "error",
   label = "削除",
 }) => {
-  const holdDuration = 1000; // ms
-  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const [showTooltip, setShowTooltip] = React.useState(false);
+  const buttonRef = React.useRef<HTMLSpanElement>(null);
+  const tooltipRef = React.useRef<HTMLSpanElement>(null);
 
-  const handleHoldStart = () => {
-    timerRef.current = setTimeout(() => {
-      deleteOneLocal(todoItem.id);
-    }, holdDuration);
+  // 吹き出し位置をウインドウ内に収める
+  React.useEffect(() => {
+    if (!showTooltip || !tooltipRef.current || !buttonRef.current) return;
+    const tooltip = tooltipRef.current;
+    const rect = tooltip.getBoundingClientRect();
+    const windowWidth = window.innerWidth;
+    let offset = 0;
+    if (rect.left < 0) {
+      offset = -rect.left + 8;
+    } else if (rect.right > windowWidth) {
+      offset = windowWidth - rect.right - 8;
+    }
+    tooltip.style.transform = `translateX(calc(-50% + ${offset}px))`;
+  }, [showTooltip]);
+
+  // 外部クリックで吹き出しを消す
+  React.useEffect(() => {
+    if (!showTooltip) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        buttonRef.current &&
+        !buttonRef.current.contains(e.target as Node)
+      ) {
+        setShowTooltip(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showTooltip]);
+
+  const handleClick = () => {
+    setShowTooltip(true);
   };
 
-  const handleHoldEnd = () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
+  const handleDoubleClick = () => {
+    setShowTooltip(false);
+    deleteOneLocal(todoItem.id);
   };
 
   return (
-    <span css={getButtonStyle(variant)}>
+    <span css={[getButtonStyle(variant), wrapperStyle]} ref={buttonRef}>
+      {showTooltip && (
+        <span css={tooltipStyle} ref={tooltipRef}>ダブルクリックで削除</span>
+      )}
       <Button
         variant={getButtonVariant(variant)}
         size={size}
         color={color}
-        // onClick 削除
         aria-label={label}
         sx={{ fontWeight: "bold" }}
         fullWidth={false}
-        onMouseDown={handleHoldStart}
-        onMouseUp={handleHoldEnd}
-        onMouseLeave={handleHoldEnd}
-        onTouchStart={handleHoldStart}
-        onTouchEnd={handleHoldEnd}
+        onClick={handleClick}
+        onDoubleClick={handleDoubleClick}
       >
         {label}
       </Button>
