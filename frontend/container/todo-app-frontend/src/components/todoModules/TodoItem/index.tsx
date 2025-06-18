@@ -5,6 +5,10 @@ import TodoCompleted from "./completed";
 import TodoDueDate from "./dueDate";
 import TodoPriority from "./priority";
 import TodoDelete from "./deleteButton";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Stack from "@mui/material/Stack";
+
 // Todoコンポーネントのprops型定義
 export type TodoPropsType = {
   data: TodoType; // 表示するタスクデータ
@@ -14,13 +18,19 @@ export type TodoPropsType = {
 
 export default function TodoItem({ data: todoItem, updateOneLocal, deleteOneLocal }: TodoPropsType) {
   return (
-    <div className="list-item">
-      <TodoTitle todoItem={todoItem} updateOneLocal={updateOneLocal} variant="cool" />
-      <TodoDescription todoItem={todoItem} updateOneLocal={updateOneLocal} variant="cool" size="medium" />
-      <TodoCompleted todoItem={todoItem} updateOneLocal={updateOneLocal} variant="cool" size="small" />
-      <TodoDueDate todoItem={todoItem} updateOneLocal={updateOneLocal} variant="cool" size="small" />
-      <TodoPriority todoItem={todoItem} updateOneLocal={updateOneLocal} variant="cool" size="small" />
-      <TodoDelete todoItem={todoItem} deleteOneLocal={deleteOneLocal} variant="cool" size="small" />
-    </div>
+    <Card sx={{ mb: 2, borderRadius: 3, boxShadow: 2 }}>
+      <CardContent>
+        <Stack spacing={1.5}>
+          <TodoTitle todoItem={todoItem} updateOneLocal={updateOneLocal} variant="outlined" />
+          <TodoDescription todoItem={todoItem} updateOneLocal={updateOneLocal} variant="standard" size="medium" />
+          <Stack direction="row" spacing={1} alignItems="center">
+            <TodoDueDate todoItem={todoItem} updateOneLocal={updateOneLocal} variant="standard" size="small" />
+            <TodoPriority todoItem={todoItem} updateOneLocal={updateOneLocal} variant="standard" size="small" />
+            <TodoCompleted todoItem={todoItem} updateOneLocal={updateOneLocal} variant="standard" size="small" />
+            <TodoDelete todoItem={todoItem} deleteOneLocal={deleteOneLocal} variant="outlined" size="small" />
+          </Stack>
+        </Stack>
+      </CardContent>
+    </Card>
   );
 }

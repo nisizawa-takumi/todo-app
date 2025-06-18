@@ -29,6 +29,12 @@ const filledStyle = css`
 const standardStyle = css`
   background: transparent;
   border-bottom: 2px solid #1976d2;
+  .MuiInputLabel-root {
+    margin-bottom: -8px; /* デフォルトより余白を減らす */
+  }
+  .MuiInputBase-root {
+    margin-top: -4px; /* 入力欄の上余白も微調整 */
+  }
 `;
 
 const coolStyle = css`
@@ -139,9 +145,7 @@ const TodoPriority: React.FC<PriorityProps> = ({
       value={todoItem.priority}
       name="priority"
       id={`priority-${todoItem.id}`}
-      onChange={(e) =>
-        updateOneLocal({ ...todoItem, priority: e.target.value as Priority })
-      }
+      onChange={(e) => updateOneLocal({ ...todoItem, priority: e.target.value as Priority })}
       fullWidth
       slotProps={{ input: { "aria-label": label } }}
       margin="dense"
