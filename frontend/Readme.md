@@ -106,6 +106,13 @@ npm install --save-dev concurrently # 複数のnpmスクリプトを並列実行
 sudo chown -R <ubuntuユーザ名>:<ubuntuユーザ名> /home/<ubuntuユーザ名>/todo-app/frontend/container
 ```
 
+## 後から追加したもの
+
+```bash
+npm install --save-dev json-server
+npm install uuid
+```
+
 # 構成(まだかなり雑、変わる可能性高)
 
 ```
