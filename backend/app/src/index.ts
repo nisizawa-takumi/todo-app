@@ -25,7 +25,10 @@ app.get('/allTodos', async (req, res) => {
 
 app.post("/createTodo", async (req, res) => {
     try {
-        const { title, description, completed, priority, due_date } = req.body;
+        const { title, description, completed, priority, due_date, userId } = req.body;
+        if (!userId) {
+            return res.status(400).json({ error: "userIdが必要です" });
+        }
         const createTodo = await prisma.todo.create({
             data: {
                 title,
@@ -33,6 +36,7 @@ app.post("/createTodo", async (req, res) => {
                 completed,
                 priority,
                 due_date: new Date(due_date),
+                user: { connect: { id: userId } }
             },
         });
         res.json(createTodo);
@@ -108,6 +112,7 @@ app.delete("/deleteTodo/:id", async (req, res) => {
     }
 });
 
+// 認証と認可
 // JWT認証用にRequest型を拡張
 interface AuthRequest extends Request {
     user?: any;
