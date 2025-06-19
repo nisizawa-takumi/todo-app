@@ -681,3 +681,303 @@ Warning: findDOMNode is deprecated in StrictMode. findDOMNode was passed an inst
 - React などのフレームワークは DOM 操作（＝どの要素をどう配置するか）を担当
 - CSS（や CSS-in-JS）は見た目の描画を担当
 - クラス名の付け外しや属性の切り替えが「状態 → 見た目」の橋渡し
+
+# React の CRUD 関数の扱いに関する QA
+
+---
+
+## Q. CRUD 操作ができる関数の入ったオブジェクトを state で保持し、初回マウント時に一度だけ関数取得を行ったほうが効率的ですか？
+
+**A. 必要ありません。**
+
+- useTodoCrud のようなカスタムフックは、毎回レンダリング時に呼び出しても OK です。
+- 返される CRUD 関数（例: addTodo, updateOne, deleteOne, fetchAll）は、初回マウント時に一度だけ取得する必要はありません。
+- 何度取得しても問題ありませんし、効率も悪くなりません。
+
+---
+
+## Q. 初回マウント時に一度だけ実行したい処理は何ですか？
+
+**A. データの取得(fetchAll)などの副作用です。**
+
+- これは `useEffect(() => { fetchAll() }, [])` のように書きます。
+
+---
+
+## Q. CRUD 関数を state で保持する必要はありますか？
+
+**A. 必要ありません。**
+
+- CRUD 関数を state で持つことは、むしろ効率が悪くなる場合があります。
+- React の state は主に「値の変化をトリガーに UI を再描画する」ためのものなので、関数自体を state で持つのは本来の用途ではありません。
+
+---
+
+## Q. 実装例は？
+
+```js
+// コンポーネント内
+const { todos, addTodo, updateOne, deleteOne, fetchAll } = useTodoCrud("api");
+
+useEffect(() => {
+  fetchAll()
+    .catch((e) => setError(e.message))
+    .finally(() => setLoading(false));
+}, []);
+```
+
+---
+
+## Q. state で関数を持つと効率が悪くなる理由は？
+
+**A. 不要な再レンダリングや再生成が発生する可能性があるためです。**
+
+- useTodoCrud のようなカスタムフックは、毎回呼び出してもオーバーヘッドが非常に小さいです。
+- 可読性・保守性の観点からも、state で持たずに直接使う方がシンプルです。
+
+---
+
+## まとめ
+
+- state で関数を持つのは非推奨（効率も悪くなる可能性あり）
+- オーバーヘッドは小さいので、可読性・一貫性を優先して直接使うのがベスト
+
+# Q&A: React の useState の使い方について
+
+## Q. この実装って useState を関数の中で使ってる気もするんですがこれって良いんですか？
+
+### A.
+
+React のルールでは、フック（useState, useEffect など）は「コンポーネント本体」または「他のカスタムフック」のトップレベルでのみ呼び出す必要があります。  
+useTodoCrud は「カスタムフック」なので、その中で useState を使うのは問題ありません。
+
+---
+
+### NG 例（関数や if 文の中でフックを呼ぶのはダメ）
+
+```javascript
+function MyComponent() {
+  if (条件) {
+    // これはダメ
+    const [x, setX] = useState(0);
+  }
+}
+```
+
+---
+
+### OK 例（カスタムフックの中で useState を使う）
+
+```javascript
+function useMyLogic() {
+  const [x, setX] = useState(0);
+  // ...ロジック...
+  return { x, setX };
+}
+```
+
+---
+
+## まとめ
+
+- カスタムフックの中で useState を使うのは OK
+- ただし、カスタムフック自体はコンポーネントのトップレベルで呼び出すこと
+
+## Q. debounce での遅延実行というものについて解説お願いします。
+
+A.  
+はい、**debounce（デバウンス）**とは「短時間に何度も発生するイベントを、一定時間イベントが発生しなくなるまで待ってから 1 回だけ実行する」仕組みです。
+
+---
+
+Q. どういうときに使う？
+
+A.
+
+- 入力欄の onChange で API リクエストや重い処理を毎回実行したくないとき
+- スクロールやリサイズなど、連続して発生するイベントの処理を間引きたいとき
+
+---
+
+Q. 仕組み（イメージ）は？
+
+A.
+
+- ユーザーが入力するたびにタイマーをセット
+- その間にさらに入力があれば、前のタイマーをキャンセルして再セット
+- 一定時間（例: 500ms）入力が止まったら、1 回だけ処理を実行
+
+---
+
+Q. 例：lodash.debounce を使った React での実装は？
+
+A.
+
+```typescript
+import React from "react";
+import debounce from "lodash.debounce";
+// ...existing code...
+
+const TodoTitle: React.FC<Props> = ({ todoItem, updateOne, setError = () => {}, variant = "standard" }) => {
+  const [title, setTitle] = React.useState(todoItem.title);
+
+  // updateOneを500ms遅延で呼ぶdebounced関数を作成
+  const debouncedUpdate = React.useMemo(
+    () =>
+      debounce((newTitle: string) => {
+        updateOne({ ...todoItem, title: newTitle }).catch((err) => setError(err.message));
+      }, 500),
+    [todoItem, updateOne, setError]
+  );
+
+  React.useEffect(() => {
+    setTitle(todoItem.title);
+  }, [todoItem.title]);
+
+  return (
+    <div css={getInputStyle(variant)}>
+      <TextField
+        label="タイトル"
+        variant={getTextFieldVariant(variant)}
+        value={title}
+        name="title"
+        id={`title-${todoItem.id}`}
+        fullWidth
+        onChange={(e) => {
+          setTitle(e.target.value);
+          debouncedUpdate(e.target.value);
+        }}
+        slotProps={{ input: { "aria-label": todoItem.title } }}
+      />
+    </div>
+  );
+};
+```
+
+---
+
+Q. ポイントは？
+
+A.
+
+- 入力のたびに setTitle でローカル state を更新
+- 入力が止まって 500ms 経過したら updateOne が 1 回だけ呼ばれる
+- lodash.debounce は npm で`npm install lodash.debounce`で導入できます
+
+---
+
+Q. まとめ
+
+A.  
+debounce は「連続イベントの処理を間引く」ためのテクニックです。  
+API 通信や重い処理を最小限にしたいときにとても有効です。
+
+# React の useMemo・useCallback・debounce に関する QA
+
+---
+
+## Q1. なぜ`React.useMemo`で debounce した関数をラップするのですか？
+
+**A1.**  
+毎回新しい debounced 関数を作らないためです。  
+`useMemo`を使わずに毎回`debounce(...)`を呼ぶと、レンダリングごとに新しい debounced 関数が生成されてしまい、debounce の「遅延実行」や「キャンセル」などの効果が正しく働かなくなります。
+
+- `useMemo`を使うことで、依存配列（例: `[updateOne, setError]`）が変わらない限り、同じ debounced 関数を再利用できます。
+- これにより、debounce の効果（遅延実行・キャンセル）が正しく機能します。
+
+**ポイント:**  
+「debounced 関数は毎回新しく作らず、同じものを使い続ける」ために`useMemo`でラップしています。
+
+---
+
+## Q2. `useCallback`の仕組みと使い方を教えてください。
+
+**A2.**  
+`useCallback`は、関数をメモ化（キャッシュ）する React のフックです。依存配列が変わらない限り、同じ関数インスタンスを再利用できます。
+
+- 通常、関数コンポーネントはレンダリングのたびに関数（例: `updateOne`）を新しく作り直します。
+- これが子コンポーネントやフックの依存配列に渡されると、毎回「新しい関数」と認識され、不要な再レンダリングや副作用の再実行が発生します。
+- `useCallback`を使うと、依存配列が変わらない限り、同じ関数を返し続けます。
+
+**使い方例:**
+
+```typescript
+const memoizedFn = useCallback(() => {
+  // 何らかの処理
+}, [依存する値1, 依存する値2]);
+```
+
+**例：`updateOne`を useCallback でメモ化**
+
+```typescript
+const updateOne = React.useCallback(
+  async (newTodo: TodoType) => {
+    // ここに更新処理
+  },
+  [setClientTodoList]
+);
+```
+
+**まとめ:**
+
+- 関数の再生成を防ぎたいときに使う
+- 子コンポーネントや`useMemo`/`useEffect`の依存配列に渡す関数は`useCallback`でメモ化すると安全
+- 依存配列が変わると新しい関数が生成される
+
+**ポイント:**  
+`useCallback`は「関数版の useMemo」と覚えると分かりやすいです。
+
+---
+
+## Q3. `debouncedUpdate`の依存配列を空にしたらうまくいきましたが、ESLint が警告します。なぜですか？
+
+**A3.**  
+依存配列を空にすると、`debouncedUpdate`は初回マウント時の`todoItem`をずっと参照し続けます。そのため、debounced 関数の中で使われる`todoItem`は「最初に渡されたもの」で固定され、毎回新しい debounced 関数が作られず、debounce の効果が安定して発揮されます。
+
+**しかし、ESLint が警告する理由:**
+
+- 依存配列を空にすると、`todoItem`が変わっても debounced 関数の中身が更新されません。
+- 古い`todoItem`を参照し続けるため、「意図しないバグの温床になる可能性がある」と ESLint が警告します。
+
+---
+
+## Q4. 依存配列に`todoItem`を入れるとどうなりますか？
+
+**A4.**  
+依存配列に`todoItem`を入れると、`todoItem`が変わるたびに debounced 関数が再生成され、タイマーがリセットされます。そのため、連続入力時に意図しない挙動になることもあります。
+
+---
+
+## Q5. debounce の引数として`updateOne`、`setError`、`todoItem`をすべて渡す方法はどうですか？
+
+**A5.**  
+この方法も有効です！debounce の引数として`updateOne`、`setError`、`todoItem`など必要な値をすべて渡すことで、クロージャに依存せず、常に最新の値で処理を実行できます。
+
+**例:**
+
+```typescript
+const debouncedUpdate = React.useMemo(
+  () =>
+    debounce(async (title: string, todoItem: TodoType, updateOne: Props["updateOne"], setError: Props["setError"]) => {
+      try {
+        await updateOne({ ...todoItem, title });
+      } catch (err: any) {
+        setError?.(err.message);
+      }
+    }, 500),
+  []
+);
+
+const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  setInputValue(e.target.value);
+  debouncedUpdate(e.target.value, todoItem, updateOne, setError);
+};
+```
+
+**ポイント:**
+
+- `debouncedUpdate`の依存配列は空で OK（ESLint 警告も出ません）
+- 必要な値は毎回引数で渡すので、常に最新の値で処理されます
+- クロージャの罠を回避できます
+
+**この方法は安全かつ推奨される設計です！**

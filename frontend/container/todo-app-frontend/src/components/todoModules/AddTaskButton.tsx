@@ -3,7 +3,8 @@ import { v4 as uuidv4 } from "uuid";
 import type { TodoType } from "../../lib/todo/apiClient";
 
 type AddTaskButtonProps = {
-  addTodoLocal: (newTodo: TodoType) => void;
+  addOne: (newTodo: TodoType) => Promise<void>;
+  setError?: React.Dispatch<React.SetStateAction<string | null>>;
 };
 const allowedPriorities = ["high", "medium", "low"] as const;
 type Priority = (typeof allowedPriorities)[number];
@@ -12,7 +13,7 @@ function isPriority(value: string): value is Priority {
   return allowedPriorities.includes(value as Priority);
 }
 
-const AddTaskButton: React.FC<AddTaskButtonProps> = ({ addTodoLocal }) => {
+const AddTaskButton: React.FC<AddTaskButtonProps> = ({ addOne, setError = () => {} }) => {
   return (
     <form
       onSubmit={(e) => {
@@ -29,15 +30,16 @@ const AddTaskButton: React.FC<AddTaskButtonProps> = ({ addTodoLocal }) => {
         const dueDateValue = dueDateElement.value || "";
 
         if (titleValue) {
-          addTodoLocal({
+          addOne({
             id: uuidv4(),
             title: titleValue,
             description: descriptionValue,
             completed: false,
             priority: priorityValue,
             due_date: dueDateValue,
-          });
-          form.reset();
+          })
+            .then(() => form.reset())
+            .catch((err) => setError(err.message));
         } else {
           alert("タイトルを入力してください。"); //※ formにrequiredがついてるので普通どうやっても出ない
         }
