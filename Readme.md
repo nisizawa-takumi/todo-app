@@ -7,7 +7,7 @@ vscode では.md ファイルは右クリックでビューアが開く
 
 ## 前提条件
 
-- Docker および Docker Compose がインストールされていること
+- WSL の Ubuntu 内で Docker および Docker Compose がインストールされていること
 - /home/<ubuntu ユーザ名>/に todo-app リポジトリを置くこととする
 
 ## 起動方法
@@ -112,7 +112,10 @@ docker compose up --build
 ### 5. TypeError: Invalid URL が出て npm が使えない
 
 WSL 内で win にインストールされた nodejs を使っていたためだった。
-WSL 内で nodejs をインストールして解決
+WSL 内で nodejs をインストールするか、すでに用意されたコンテナ内の nodejs 環境を使う
+front-end コンテナ、back-end コンテナともに nodejs 環境を整備してあります
+
+WSL 内で nodejs をインストールの場合(やらなくていいと思う)
 
 ```bash
 sudo apt update
@@ -120,6 +123,15 @@ sudo apt install nodejs npm
 node -v
 npm -v
 ```
+
+コンテナを使う場合
+
+```bash
+docker compose up -d
+docker compose exec frontend bash
+```
+
+等とすればコンテナに入ることができる。コンテナ内では nodejs が使えて、npm も使える。
 
 ## その他
 

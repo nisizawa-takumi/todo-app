@@ -1,23 +1,22 @@
 // Todo型: 1つのToDoアイテムを表現する型定義
-export type Todo = {
-  id: number; // ToDoの一意なID
+export type TodoType = {
+  id: string; // ToDoの一意なID
   title: string; // タイトル
   description: string; // 詳細説明
   completed: boolean; // 完了フラグ
-  priority: string; // 優先度（例: "high", "medium", "low"）
-  tags: string[]; // タグの配列
+  priority: "high" | "medium" | "low"; // 優先度（"high", "medium", "low" の3択）
   due_date: string; // 期限日（ISO8601形式の文字列）
 };
 
-// APIのベースURL。
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "/api/todos";
+// APIのベースURL。とりあえず開発用のものだけ
+const API_BASE = "http://localhost:3001/todos";
 
 /**
  * ToDoリスト全件取得
  * GET /api/todos
  * @returns Todo型の配列
  */
-export async function fetchTodos(): Promise<Todo[]> {
+export async function fetchTodoList(): Promise<TodoType[]> {
   // fetchでAPIにリクエスト。cache: "no-store"でキャッシュを無効化
   const res = await fetch(API_BASE, { cache: "no-store" });
   // レスポンスが正常でなければエラーを投げる
@@ -32,7 +31,7 @@ export async function fetchTodos(): Promise<Todo[]> {
  * @param todo idを除いたTodoデータ
  * @returns 作成されたTodo
  */
-export async function createTodo(todo: Omit<Todo, "id">): Promise<Todo> {
+export async function createTodo(todo: Omit<TodoType, "id">): Promise<TodoType> {
   // fetchでPOSTリクエスト。Content-TypeはJSON
   const res = await fetch(API_BASE, {
     method: "POST",
@@ -52,7 +51,7 @@ export async function createTodo(todo: Omit<Todo, "id">): Promise<Todo> {
  * @param todo 更新内容（部分的なデータでOK）
  * @returns 更新後のTodo
  */
-export async function updateTodo(id: number, todo: Partial<Todo>): Promise<Todo> {
+export async function updateTodo(id: string, todo: Partial<TodoType>): Promise<TodoType> {
   // fetchでPUTリクエスト。Content-TypeはJSON
   const res = await fetch(`${API_BASE}/${id}`, {
     method: "PUT",
@@ -70,7 +69,7 @@ export async function updateTodo(id: number, todo: Partial<Todo>): Promise<Todo>
  * DELETE /api/todos/:id
  * @param id 削除対象のTodoのID
  */
-export async function deleteTodo(id: number): Promise<void> {
+export async function deleteTodo(id: string): Promise<void> {
   // fetchでDELETEリクエスト
   const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
   // レスポンスが正常でなければエラー
