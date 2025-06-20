@@ -3,11 +3,13 @@ import React from "react";
 import type { TodoType } from "@/lib/todo/apiClient";
 import TextField from "@mui/material/TextField";
 import { css } from "@emotion/react";
-
+import debounce from "lodash.debounce";
+import { TODO_UPDATE_INTERVAL_MS } from "@/constants/timing";
 type Props = {
   todoItem: TodoType;
-  updateOneLocal: (item: TodoType) => void;
+  updateOne: (item: TodoType) => Promise<void>;
   variant?: "outlined" | "filled" | "standard" | "cool";
+  setError?: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 const outlinedStyle = css`
@@ -96,19 +98,45 @@ const getTextFieldVariant = (
   return variant;
 };
 
-const TodoTitle: React.FC<Props> = ({ todoItem, updateOneLocal, variant = "standard" }) => (
-  <div css={getInputStyle(variant)}>
-    <TextField
-      label="タイトル"
-      variant={getTextFieldVariant(variant)}
-      value={todoItem.title}
-      name="title"
-      id={`title-${todoItem.id}`}
-      fullWidth
-      onChange={(e) => updateOneLocal({ ...todoItem, title: e.target.value })}
-      slotProps={{ input: { "aria-label": todoItem.title } }}
-    />
-  </div>
-);
+const TodoTitle: React.FC<Props> = ({ todoItem, updateOne, setError = () => {}, variant = "standard" }) => {
+  const [inputValue, setInputValue] = React.useState(todoItem.title);
+  React.useEffect(() => {
+    setInputValue(todoItem.title);
+  }, [todoItem.title]);
+  const debouncedUpdate = React.useMemo(
+    () =>
+      debounce(
+        async (title: string, todoItem: TodoType, updateOne: Props["updateOne"], setError: Props["setError"]) => {
+          await updateOne({ ...todoItem, title }).catch((err) => (setError ? setError(err.message) : null));
+        },
+        TODO_UPDATE_INTERVAL_MS
+      ),
+    []
+  );
+  React.useEffect(() => {
+    // アンマウント時にdebouncedUpdate.cancel()を呼ぶ
+    return () => {
+      debouncedUpdate.cancel();
+    };
+  }, [debouncedUpdate]);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setInputValue(e.target.value);
+    debouncedUpdate(e.target.value, todoItem, updateOne, setError);
+  };
+  return (
+    <div css={getInputStyle(variant)}>
+      <TextField
+        label="タイトル"
+        variant={getTextFieldVariant(variant)}
+        value={inputValue}
+        name="title"
+        id={`title-${todoItem.id}`}
+        fullWidth
+        onChange={(e) => handleChange(e)}
+        slotProps={{ input: { "aria-label": todoItem.title } }}
+      />
+    </div>
+  );
+};
 
 export default TodoTitle;

@@ -3,14 +3,16 @@ import React from "react";
 import type { TodoType } from "@/lib/todo/apiClient";
 import TextField from "@mui/material/TextField";
 import { css } from "@emotion/react";
-
+import debounce from "lodash.debounce";
+import { TODO_UPDATE_INTERVAL_MS } from "@/constants/timing";
 type DescriptionProps = {
   todoItem: TodoType;
-  updateOneLocal: (item: TodoType) => void;
+  updateOne: (item: TodoType) => Promise<void>;
   variant?: "outlined" | "filled" | "standard" | "cool";
   size?: "small" | "medium";
   color?: "primary" | "secondary" | "error" | "info" | "success" | "warning";
   label?: string;
+  setError?: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 const outlinedStyle = css`
@@ -130,27 +132,59 @@ const sizeStyle = {
 
 const TodoDescription: React.FC<DescriptionProps> = ({
   todoItem,
-  updateOneLocal,
+  updateOne,
+  setError = () => {},
   variant = "outlined",
   size = "medium",
   color = "primary",
   label = "説明",
-}) => (
-  <div css={[getInputStyle(variant), sizeStyle[size]]}>
-    <TextField
-      label={label}
-      variant={variant === "cool" ? "outlined" : variant}
-      size={size}
-      color={color}
-      value={todoItem.description}
-      name="description"
-      id={`description-${todoItem.id}`}
-      onChange={(e) => updateOneLocal({ ...todoItem, description: e.target.value })}
-      fullWidth
-      slotProps={{ input: { "aria-label": todoItem.title } }}
-      margin="dense"
-    />
-  </div>
-);
+}) => {
+  const [inputValue, setInputValue] = React.useState(todoItem.description);
+  React.useEffect(() => {
+    setInputValue(todoItem.description);
+  }, [todoItem.description]);
+  const debouncedUpdate = React.useMemo(
+    () =>
+      debounce(
+        async (
+          description: string,
+          todoItem: TodoType,
+          updateOne: DescriptionProps["updateOne"],
+          setError: DescriptionProps["setError"]
+        ) => {
+          await updateOne({ ...todoItem, description }).catch((err) => (setError ? setError(err.message) : null));
+        },
+        TODO_UPDATE_INTERVAL_MS
+      ),
+    []
+  );
+  React.useEffect(() => {
+    // アンマウント時にdebouncedUpdate.cancel()を呼ぶ
+    return () => {
+      debouncedUpdate.cancel();
+    };
+  }, [debouncedUpdate]);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setInputValue(e.target.value);
+    debouncedUpdate(e.target.value, todoItem, updateOne, setError);
+  };
+  return (
+    <div css={[getInputStyle(variant), sizeStyle[size]]}>
+      <TextField
+        label={label}
+        variant={variant === "cool" ? "outlined" : variant}
+        size={size}
+        color={color}
+        value={inputValue}
+        name="description"
+        id={`description-${todoItem.id}`}
+        onChange={handleChange}
+        fullWidth
+        slotProps={{ input: { "aria-label": todoItem.title } }}
+        margin="dense"
+      />
+    </div>
+  );
+};
 
 export default TodoDescription;

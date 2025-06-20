@@ -3,14 +3,24 @@
 import React, { useState, useEffect, Fragment, useRef } from "react";
 import TodoItem from "@/components/todoModules/TodoItem";
 import AddTaskButton from "@/components/todoModules/AddTaskButton";
-import { fetchTodoList, TodoType } from "@/lib/todo/apiClient";
-import { MOCK_syncTodoListWithDB } from "../../mocks/expandedJsonServerApi";
+import SyncModeToggle from "@/components/todoModules/SyncModeToggle";
+import { TodoType } from "@/lib/todo/apiClient";
 import LoadingSpinner from "@/components/utilModules/LoadingSpinner";
-//import "./todoTransition.css";
 import { TransitionGroup, CSSTransition } from "react-transition-group";
 import { css } from "@emotion/react";
+import { useTodoCrud } from "@/hooks/todoCrud";
+import { fetchTodoList } from "@/lib/todo/apiClient";
 
 const todoTransition = css`
+  .todo-appear {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  .todo-appear-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: 1000ms;
+  }
   .todo-enter {
     opacity: 0;
     transform: translateY(20px);
@@ -18,11 +28,11 @@ const todoTransition = css`
   .todo-enter-active {
     opacity: 1;
     transform: translateY(0);
-    transition: opacity 1000ms, transform 1000ms;
+    transition: 1000ms;
   }
   .todo-exit {
     opacity: 1;
-    height: 232px; /* TodoItemの高さに合わせて調整 */
+    height: 232px; /* TodoItemの高さに合わせて調整 (chromeの検証使うと便利)*/
     overflow: hidden;
     margin-bottom: 16px; /* 必要なら */
     padding: 0 0;
@@ -32,42 +42,30 @@ const todoTransition = css`
     height: 0;
     margin-bottom: 0;
     padding: 0 0;
-    transition: opacity 1000ms, height 1000ms, margin 1000ms, padding 1000ms;
+    transition: 1000ms;
   }
 `;
 
 export default function ToDoList() {
   const [error, setError] = useState<string | null>(null);
+  const [syncMode, setSyncMode] = useState<"api" | "local">("api");
+  const [clientTodoList, setClientTodoList] = useState<TodoType[]>([]);
+  const { addOne, updateOne, deleteOne, syncTodos } = useTodoCrud(clientTodoList, setClientTodoList, syncMode);
   const [loading, setLoading] = useState(true);
-  const [clientTodoList, updateTodoLocal] = useState<TodoType[]>([]);
   const nodeRefs = useRef<{ [key: string]: React.RefObject<HTMLDivElement | null> }>({});
   clientTodoList.forEach((todo) => {
     if (!nodeRefs.current[todo.id]) {
       nodeRefs.current[todo.id] = React.createRef<HTMLDivElement>();
     }
   });
-  const updateOneLocal = (newTodo: TodoType) => {
-    //react内のtodoListステートを変更する。DBと同期していないことに注意
-    updateTodoLocal((todoList) => todoList.map((todo) => (todo.id === newTodo.id ? { ...newTodo } : todo)));
-  };
-  const addTodoLocal = (newTodo: TodoType) => {
-    //react内のtodoListステートを変更する。DBと同期していないことに注意
-    updateTodoLocal((todoList) => [...todoList, newTodo]);
-  };
-  const deleteOneLocal = (id: string) => {
-    //react内のtodoListステートを変更する。DBと同期していないことに注意
-    updateTodoLocal((tasks) => tasks.filter((task) => task.id !== id));
-  };
-  const [remoteTodoList, syncRemoteTodoList] = useState<TodoType[]>([]);
-  const updateRemoteView = (tasks: TodoType[]) => syncRemoteTodoList(tasks);
   useEffect(() => {
     (async () => {
-      const todos = await fetchTodoList();
-      updateTodoLocal(todos);
+      const fetched = await fetchTodoList();
+      setClientTodoList(fetched);
     })() //※ 即時実行関数(IIFE: Immediately Invoked Function Expression)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, []); //※ ここはリロード時に実行(useEffectの第二引数に空配列を置くとそうなる)
+  }, []); //※ ここはリロード時に実行(useEffectの第二引数を空配列にするとそうなる)
   if (error) {
     return (
       <>
@@ -82,31 +80,27 @@ export default function ToDoList() {
   }
   return (
     <>
-      {/* {clientTodoList.map((todo) => (
-        <Fragment key={todo.id}>
-          <TodoItem data={todo} updateOneLocal={updateOneLocal} deleteOneLocal={deleteOneLocal} />
-        </Fragment>
-      ))} */}
+      <SyncModeToggle syncMode={syncMode} setSyncMode={setSyncMode} variant="outlined" />
       <span css={todoTransition}>
         <TransitionGroup component={null}>
           {clientTodoList.map((todo) => (
-            <CSSTransition key={todo.id} timeout={1000} classNames="todo" nodeRef={nodeRefs.current[todo.id]}>
+            <CSSTransition key={todo.id} timeout={1000} classNames="todo" nodeRef={nodeRefs.current[todo.id]} appear>
               <div ref={nodeRefs.current[todo.id]}>
-                <TodoItem data={todo} updateOneLocal={updateOneLocal} deleteOneLocal={deleteOneLocal} />
+                <TodoItem data={todo} updateOne={updateOne} deleteOne={deleteOne} />
               </div>
             </CSSTransition>
           ))}
         </TransitionGroup>
       </span>
-      <AddTaskButton addTodoLocal={addTodoLocal} />
+      <AddTaskButton addOne={addOne} />
       <div
         onClick={async () => {
-          updateRemoteView(clientTodoList);
-          updateTodoLocal(await MOCK_syncTodoListWithDB(clientTodoList));
+          setLoading(true);
+          await syncTodos(clientTodoList);
+          setLoading(false);
         }}
       >
         <div>DB同期:</div>
-        履歴{remoteTodoList.map((todo) => `${todo.id}: ${todo.title}`).join("\n")}
       </div>
     </>
   );

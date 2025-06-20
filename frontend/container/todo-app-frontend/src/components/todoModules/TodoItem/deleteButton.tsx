@@ -6,11 +6,12 @@ import Button from "@mui/material/Button";
 
 type DeleteButtonProps = {
   todoItem: TodoType;
-  deleteOneLocal: (id: TodoType["id"]) => void;
+  deleteOne: (id: TodoType["id"]) => Promise<void>;
   variant?: "outlined" | "contained" | "text" | "cute" | "cool";
   size?: "small" | "medium" | "large";
   color?: "primary" | "secondary" | "error" | "info" | "success" | "warning";
   label?: string;
+  setError?: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 const outlinedStyle = css`
@@ -128,7 +129,8 @@ const wrapperStyle = css`
 
 const TodoDelete: React.FC<DeleteButtonProps> = ({
   todoItem,
-  deleteOneLocal,
+  deleteOne,
+  setError = () => {},
   variant = "outlined",
   size = "medium",
   color = "error",
@@ -157,10 +159,7 @@ const TodoDelete: React.FC<DeleteButtonProps> = ({
   React.useEffect(() => {
     if (!showTooltip) return;
     const handleClickOutside = (e: MouseEvent) => {
-      if (
-        buttonRef.current &&
-        !buttonRef.current.contains(e.target as Node)
-      ) {
+      if (buttonRef.current && !buttonRef.current.contains(e.target as Node)) {
         setShowTooltip(false);
       }
     };
@@ -174,13 +173,15 @@ const TodoDelete: React.FC<DeleteButtonProps> = ({
 
   const handleDoubleClick = () => {
     setShowTooltip(false);
-    deleteOneLocal(todoItem.id);
+    deleteOne(todoItem.id).catch((err) => setError(err.message));
   };
 
   return (
     <span css={[getButtonStyle(variant), wrapperStyle]} ref={buttonRef}>
       {showTooltip && (
-        <span css={tooltipStyle} ref={tooltipRef}>ダブルクリックで削除</span>
+        <span css={tooltipStyle} ref={tooltipRef}>
+          ダブルクリックで削除
+        </span>
       )}
       <Button
         variant={getButtonVariant(variant)}

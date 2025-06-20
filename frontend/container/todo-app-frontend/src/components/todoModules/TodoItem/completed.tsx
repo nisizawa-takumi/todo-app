@@ -5,10 +5,11 @@ import { css } from "@emotion/react";
 import type { TodoType } from "@/lib/todo/apiClient";
 type CompletedCheckboxProps = {
   todoItem: TodoType;
-  updateOneLocal: (item: TodoType) => void;
+  updateOne: (item: TodoType) => Promise<void>;
   variant?: "outlined" | "filled" | "standard" | "cute" | "cool";
   size?: "small" | "medium";
   label?: string;
+  setError?: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 const outlinedStyle = css`
@@ -131,7 +132,8 @@ const sizeStyle = {
 
 const TodoCompleted: React.FC<CompletedCheckboxProps> = ({
   todoItem,
-  updateOneLocal,
+  updateOne,
+  setError = () => {},
   variant = "outlined",
   size = "medium",
   label = "完了",
@@ -143,7 +145,9 @@ const TodoCompleted: React.FC<CompletedCheckboxProps> = ({
       control={
         <Checkbox
           checked={todoItem.completed}
-          onChange={(e) => updateOneLocal({ ...todoItem, completed: e.target.checked })}
+          onChange={(e) =>
+            updateOne({ ...todoItem, completed: e.target.checked }).catch((err) => setError(err.message))
+          }
           name="completed"
           color="primary"
           size={size}
