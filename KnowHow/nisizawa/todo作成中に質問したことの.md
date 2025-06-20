@@ -981,3 +981,121 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElemen
 - クロージャの罠を回避できます
 
 **この方法は安全かつ推奨される設計です！**
+
+## Jest でのパスの扱いは？
+
+Next.js や TypeScript では@を src ディレクトリに割り当てることが多いですが、Jest はデフォルトでこのエイリアスを認識しません。
+
+解決方法： Jest の設定（jest.config.js）に moduleNameMapper を追加し、@/を<rootDir>/src/にマッピングしてください。
+
+```typeScript
+module.exports = {
+// ...existing code...
+moduleNameMapper: {
+"^@/(.\*)$": "<rootDir>/src/$1"
+},
+// ...existing code...
+};
+```
+
+## 説明を編集できるテストにパスしなかったんです。
+
+```typescript
+const debouncedUpdate = React.useMemo(
+  () =>
+    debounce(
+      async (
+        description: string,
+        todoItem: TodoType,
+        updateOne: DescriptionProps["updateOne"],
+        setError: DescriptionProps["setError"]
+      ) => {
+        await updateOne({ ...todoItem, description }).catch((err) => (setError ? setError(err.message) : null));
+      },
+      TODO_UPDATE_INTERVAL_MS
+    ),
+  []
+);
+```
+
+こんな感じで debounce を設定しているのが理由だと思ったんですけど、どうですかね？原因わかります？
+
+はい、ご指摘の通り、debounce を使っていることがテストで「説明を編集できる」テストがパスしない主な原因です。
+
+理由：
+
+debounce は指定した遅延（TODO_UPDATE_INTERVAL_MS）の間、関数の実行を遅らせます。
+テストで fireEvent.change や fireEvent.blur をしても、debounce の遅延時間が経過しないと updateOne が呼ばれません。
+そのため、expect(mockUpdateOne).toHaveBeenCalled() が失敗します。
+解決策：
+
+テスト内でタイマーを制御する
+Jest のタイマー操作（jest.useFakeTimers() と jest.runAllTimers() など）を使い、debounce の遅延を強制的に進めることでテストを通すことができます。
+
+debounce をモックする
+テスト時だけ debounce を即時実行するようにモックする方法もあります。
+
+どちらの方法でも OK ですが、最も一般的なのは「Jest のタイマーを使う」方法です。
+
+例：
+
+jest.useFakeTimers();
+fireEvent.change(input, { target: { value: "新しい説明" } });
+fireEvent.blur(input);
+jest.runAllTimers();
+expect(mockUpdateOne).toHaveBeenCalled();
+jest.useRealTimers();
+
+このようにテストを修正すれば、debounce の遅延を無視してテストが通るようになります。
+
+テストで return を使っている理由は、非同期処理（Promise）の完了を Jest に伝えるためです。
+
+updateOne が失敗した場合のテストでは、mockUpdateOneReject が Promise を reject します。そのため、jest.advanceTimersByTime で debounce の遅延を進めた後、setError が呼ばれるのは非同期（Promise の then/catch 内）です。
+
+テスト関数内で return Promise.resolve().then(() => { ... }) のように書くことで、Jest はこの Promise の完了を待ってからテストを終了します。
+これにより、非同期で呼ばれる expect(mockSetError).toHaveBeenCalledWith(errorMessage); の検証が正しく行われます。
+
+まとめると：
+
+return で Promise を返すことで、非同期処理の完了を Jest に待たせている
+これにより、非同期のアサーションが正しく評価される
+という役割です。
+
+## Jest の非同期テストにおける return の役割
+
+### Q. debounce を使った関数のテストで、なぜ jest.runAllTimers()や jest.advanceTimersByTime()が必要なの？
+
+A. debounce は指定した遅延（例: TODO_UPDATE_INTERVAL_MS）の間、関数の実行を遅らせるため、テストで fireEvent などを実行しても、タイマーを進めないと updateOne 等が呼ばれません。jest のタイマー操作で遅延を強制的に進めることで、debounce の影響を無視してテストを通すことができます。
+
+---
+
+### Q. テスト関数で return を使う理由は？
+
+A. 非同期処理（Promise）の完了を Jest に伝えるためです。たとえば、updateOne が失敗して catch に入る場合、setError が呼ばれるのは非同期（Promise の then/catch 内）です。return で Promise を返すことで、Jest はその Promise の完了を待ってからテストを終了します。
+
+---
+
+### Q. 具体的なテスト例は？
+
+```js
+jest.useFakeTimers();
+fireEvent.change(input, { target: { value: "新しい説明" } });
+fireEvent.blur(input);
+jest.runAllTimers();
+expect(mockUpdateOne).toHaveBeenCalled();
+jest.useRealTimers();
+```
+
+---
+
+### Q. 非同期エラー時のテストで return Promise.resolve().then(...)と書くのはなぜ？
+
+A. jest.advanceTimersByTime で debounce の遅延を進めた後、setError が呼ばれるのは非同期（Promise の then/catch 内）なので、return Promise.resolve().then(() => { ... }) のように書くことで、Jest はこの Promise の完了を待ってからテストを終了します。これにより、非同期で呼ばれる expect(mockSetError).toHaveBeenCalledWith(errorMessage);の検証が正しく行われます。
+
+---
+
+### Q. まとめ
+
+- jest のタイマー操作で debounce の遅延を制御できる
+- return で Promise を返すことで、非同期アサーションも正しく評価される
+- 非同期処理の完了を Jest に伝えるために return を使う

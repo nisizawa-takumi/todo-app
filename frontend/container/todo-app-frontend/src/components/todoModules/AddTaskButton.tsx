@@ -2,58 +2,74 @@ import React from "react";
 import { v4 as uuidv4 } from "uuid";
 import type { TodoType } from "../../lib/todo/apiClient";
 
-type AddTaskButtonProps = {
-  addOne: (newTodo: TodoType) => Promise<void>;
-  setError?: React.Dispatch<React.SetStateAction<string | null>>;
-};
 const allowedPriorities = ["high", "medium", "low"] as const;
 type Priority = (typeof allowedPriorities)[number];
-/**型ガード関数というものらしい*/
 function isPriority(value: string): value is Priority {
   return allowedPriorities.includes(value as Priority);
 }
 
-const AddTaskButton: React.FC<AddTaskButtonProps> = ({ addOne, setError = () => {} }) => {
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        const form = e.target as HTMLFormElement;
-        const titleElement = form.elements.namedItem("title") as HTMLInputElement;
-        const titleValue = titleElement.value.trim() || "";
-        const descriptionElement = form.elements.namedItem("description") as HTMLInputElement;
-        const descriptionValue = descriptionElement.value.trim() || "";
-        const priorityElement = form.elements.namedItem("priority") as HTMLInputElement;
-        const rawPriorityValue = priorityElement.value.trim();
-        const priorityValue = isPriority(rawPriorityValue) ? (rawPriorityValue as "high" | "medium" | "low") : "medium";
-        const dueDateElement = form.elements.namedItem("due_date") as HTMLInputElement;
-        const dueDateValue = dueDateElement.value || "";
+type AddTaskButtonProps = {
+  addOne: (newTodo: TodoType) => Promise<void>;
+  setError?: React.Dispatch<React.SetStateAction<string | null>>;
+};
 
-        if (titleValue) {
-          addOne({
-            id: uuidv4(),
-            title: titleValue,
-            description: descriptionValue,
-            completed: false,
-            priority: priorityValue,
-            due_date: dueDateValue,
-          })
-            .then(() => form.reset())
-            .catch((err) => setError(err.message));
-        } else {
-          alert("タイトルを入力してください。"); //※ formにrequiredがついてるので普通どうやっても出ない
-        }
-      }}
-    >
+const AddTaskButton: React.FC<AddTaskButtonProps> = ({ addOne, setError = () => {} }) => {
+  const [title, setTitle] = React.useState("");
+  const [description, setDescription] = React.useState("");
+  const [priority, setPriority] = React.useState<Priority>("medium");
+  const [dueDate, setDueDate] = React.useState("");
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      await addOne({
+        id: uuidv4(),
+        title: title.trim(),
+        description: description.trim(),
+        completed: false,
+        priority,
+        due_date: dueDate,
+      });
+      setTitle("");
+      setDescription("");
+      setPriority("medium");
+      setDueDate("");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(String(err));
+      }
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
       新しいタスクを追加:
-      <input type="text" name="title" placeholder="タイトル" required />
-      <input type="text" name="description" placeholder="説明" />
-      <select name="priority" defaultValue="medium">
+      <input type="text" name="title" placeholder="タイトル" value={title} onChange={(e) => setTitle(e.target.value)} />
+      <input
+        type="text"
+        name="description"
+        placeholder="説明"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
+      <select
+        name="priority"
+        value={priority}
+        onChange={(e) => setPriority(isPriority(e.target.value) ? e.target.value : "medium")}
+      >
         <option value="high">高</option>
         <option value="medium">中</option>
         <option value="low">低</option>
       </select>
-      <input type="date" name="due_date" placeholder="期限日" />
+      <input
+        type="date"
+        name="due_date"
+        placeholder="期限日"
+        value={dueDate}
+        onChange={(e) => setDueDate(e.target.value)}
+      />
       <button type="submit">追加</button>
     </form>
   );
