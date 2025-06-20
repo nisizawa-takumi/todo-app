@@ -9,11 +9,12 @@ type Priority = "high" | "medium" | "low";
 
 type PriorityProps = {
   todoItem: TodoType;
-  updateOneLocal: (item: TodoType) => void;
+  updateOne: (item: TodoType) => Promise<void>;
   variant?: "outlined" | "filled" | "standard" | "cool";
   size?: "small" | "medium";
   color?: "primary" | "secondary" | "error" | "info" | "success" | "warning";
   label?: string;
+  setError?: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 const outlinedStyle = css`
@@ -129,11 +130,12 @@ const PRIORITY_LABELS: Record<Priority, string> = {
 
 const TodoPriority: React.FC<PriorityProps> = ({
   todoItem,
-  updateOneLocal,
+  updateOne,
   variant = "outlined",
   size = "medium",
   color = "primary",
   label = "優先度",
+  setError = () => {},
 }) => (
   <div css={[getInputStyle(variant), sizeStyle[size]]}>
     <TextField
@@ -145,7 +147,9 @@ const TodoPriority: React.FC<PriorityProps> = ({
       value={todoItem.priority}
       name="priority"
       id={`priority-${todoItem.id}`}
-      onChange={(e) => updateOneLocal({ ...todoItem, priority: e.target.value as Priority })}
+      onChange={(e) =>
+        updateOne({ ...todoItem, priority: e.target.value as Priority }).catch((err) => setError(err.message))
+      }
       fullWidth
       slotProps={{ input: { "aria-label": label } }}
       margin="dense"

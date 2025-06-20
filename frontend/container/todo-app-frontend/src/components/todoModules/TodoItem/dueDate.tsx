@@ -6,11 +6,12 @@ import { css } from "@emotion/react";
 
 type DueDateProps = {
   todoItem: TodoType;
-  updateOneLocal: (item: TodoType) => void;
+  updateOne: (item: TodoType) => Promise<void>;
   variant?: "outlined" | "filled" | "standard" | "cool";
   size?: "small" | "medium";
   color?: "primary" | "secondary" | "error" | "info" | "success" | "warning";
   label?: string;
+  setError?: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 const outlinedStyle = css`
@@ -136,7 +137,8 @@ const formatDate = (isoString?: string | null) => {
 
 const TodoDueDate: React.FC<DueDateProps> = ({
   todoItem,
-  updateOneLocal,
+  updateOne,
+  setError = () => {},
   variant = "outlined",
   size = "medium",
   color = "primary",
@@ -152,7 +154,7 @@ const TodoDueDate: React.FC<DueDateProps> = ({
       value={formatDate(todoItem.due_date)}
       name="dueDate"
       id={`dueDate-${todoItem.id}`}
-      onChange={(e) => updateOneLocal({ ...todoItem, due_date: e.target.value })}
+      onChange={(e) => updateOne({ ...todoItem, due_date: e.target.value }).catch((err) => setError(err.message))}
       fullWidth
       slotProps={{
         input: { "aria-label": todoItem.title },

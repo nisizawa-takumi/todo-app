@@ -111,6 +111,8 @@ sudo chown -R <ubuntuユーザ名>:<ubuntuユーザ名> /home/<ubuntuユーザ�
 ```bash
 npm install --save-dev json-server
 npm install uuid
+npm install lodash.debounce
+npm install --save-dev @types/lodash.debounce
 ```
 
 # 構成(まだかなり雑、変わる可能性高)
