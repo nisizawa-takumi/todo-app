@@ -1,6 +1,10 @@
-node_modules
-# Keep environment variables out of version control
+# 依存パッケージはリポジトリに含めない
+node_modules/
+
+# その他よくある除外ファイル
 .env
+.DS_Store
+npm-debug.log
 
 /src/generated/prisma
 
