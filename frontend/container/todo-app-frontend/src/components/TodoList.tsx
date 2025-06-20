@@ -86,13 +86,13 @@ export default function ToDoList() {
           {clientTodoList.map((todo) => (
             <CSSTransition key={todo.id} timeout={1000} classNames="todo" nodeRef={nodeRefs.current[todo.id]} appear>
               <div ref={nodeRefs.current[todo.id]}>
-                <TodoItem data={todo} updateOne={updateOne} deleteOne={deleteOne} />
+                <TodoItem data={todo} updateOne={updateOne} deleteOne={deleteOne} styleVariant="hybrid" />
               </div>
             </CSSTransition>
           ))}
         </TransitionGroup>
       </span>
-      <AddTaskButton addOne={addOne} />
+      <AddTaskButton addOne={addOne} variant="cool" />
       <div
         onClick={async () => {
           setLoading(true);

@@ -8,7 +8,7 @@ const meta: Meta<typeof TodoTitle> = {
   argTypes: {
     variant: {
       control: { type: "select" },
-      options: ["outlined", "filled", "standard", "cool"],
+      options: ["outlined", "filled", "standard", "cool", "material"],
     },
   },
 };
