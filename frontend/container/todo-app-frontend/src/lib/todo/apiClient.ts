@@ -1,3 +1,9 @@
+import * as jsonserver from "./jsonserver";
+import * as backend from "./backend";
+import { v4 as uuidv4 } from "uuid";
+// 切り替え用フラグ
+const USE_JSONSERVER = false;
+
 // Todo型: 1つのToDoアイテムを表現する型定義
 export type TodoType = {
   id: string; // ToDoの一意なID
@@ -8,21 +14,13 @@ export type TodoType = {
   due_date: string; // 期限日（ISO8601形式の文字列）
 };
 
-// APIのベースURL。とりあえず開発用のものだけ
-const API_BASE = "http://localhost:3001/todos";
-
 /**
  * ToDoリスト全件取得
  * GET /api/todos
  * @returns Todo型の配列
  */
 export async function fetchTodoList(): Promise<TodoType[]> {
-  // fetchでAPIにリクエスト。cache: "no-store"でキャッシュを無効化
-  const res = await fetch(API_BASE, { cache: "no-store" });
-  // レスポンスが正常でなければエラーを投げる
-  if (!res.ok) throw new Error("Failed to fetch todos");
-  // レスポンスボディをJSONとして返す
-  return res.json();
+  return USE_JSONSERVER ? jsonserver.fetchTodoList() : backend.fetchTodoList();
 }
 
 /**
@@ -31,17 +29,8 @@ export async function fetchTodoList(): Promise<TodoType[]> {
  * @param todo idを除いたTodoデータ
  * @returns 作成されたTodo
  */
-export async function createTodo(todo: Omit<TodoType, "id">): Promise<TodoType> {
-  // fetchでPOSTリクエスト。Content-TypeはJSON
-  const res = await fetch(API_BASE, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(todo), // ボディにtodoデータをJSONで送信
-  });
-  // レスポンスが正常でなければエラー
-  if (!res.ok) throw new Error("Failed to create todo");
-  // 作成されたTodoを返す
-  return res.json();
+export async function createTodo(todo: Omit<TodoType, "id"> & { userId?: string }): Promise<TodoType> {
+  return USE_JSONSERVER ? jsonserver.createTodo(todo) : backend.createTodo({ ...todo, userId: uuidv4() }); //TODO: ユーザID機能実装
 }
 
 /**
@@ -52,16 +41,7 @@ export async function createTodo(todo: Omit<TodoType, "id">): Promise<TodoType> 
  * @returns 更新後のTodo
  */
 export async function updateTodo(id: string, todo: Partial<TodoType>): Promise<TodoType> {
-  // fetchでPUTリクエスト。Content-TypeはJSON
-  const res = await fetch(`${API_BASE}/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(todo), // 更新内容をJSONで送信
-  });
-  // レスポンスが正常でなければエラー
-  if (!res.ok) throw new Error("Failed to update todo");
-  // 更新後のTodoを返す
-  return res.json();
+  return USE_JSONSERVER ? jsonserver.updateTodo(id, todo) : backend.updateTodo(id, todo);
 }
 
 /**
@@ -70,9 +50,5 @@ export async function updateTodo(id: string, todo: Partial<TodoType>): Promise<T
  * @param id 削除対象のTodoのID
  */
 export async function deleteTodo(id: string): Promise<void> {
-  // fetchでDELETEリクエスト
-  const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
-  // レスポンスが正常でなければエラー
-  if (!res.ok) throw new Error("Failed to delete todo");
-  // 削除は返り値なし
+  return USE_JSONSERVER ? jsonserver.deleteTodo(id) : backend.deleteTodo(id);
 }
