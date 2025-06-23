@@ -10,6 +10,8 @@ import { TransitionGroup, CSSTransition } from "react-transition-group";
 import { css } from "@emotion/react";
 import { useTodoCrud } from "@/hooks/todoCrud";
 import { fetchTodoList } from "@/lib/todo/apiClient";
+import { useTodoFilterSort } from "@/hooks/useTodoFilterSort";
+import TodoSearchSort from "@/components/todoModules/TodoSearchSort";
 
 const todoTransition = css`
   .todo-appear {
@@ -52,6 +54,8 @@ export default function ToDoList() {
   const [clientTodoList, setClientTodoList] = useState<TodoType[]>([]);
   const { addOne, updateOne, deleteOne, syncTodos } = useTodoCrud(clientTodoList, setClientTodoList, syncMode);
   const [loading, setLoading] = useState(true);
+  const { searchText, setSearchText, sortKey, setSortKey, sortOrder, setSortOrder, filteredSortedTodos } =
+    useTodoFilterSort(clientTodoList);
   const nodeRefs = useRef<{ [key: string]: React.RefObject<HTMLDivElement | null> }>({});
   clientTodoList.forEach((todo) => {
     if (!nodeRefs.current[todo.id]) {
@@ -81,9 +85,17 @@ export default function ToDoList() {
   return (
     <>
       <SyncModeToggle syncMode={syncMode} setSyncMode={setSyncMode} variant="outlined" />
+      <TodoSearchSort
+        searchText={searchText}
+        setSearchText={setSearchText}
+        sortKey={sortKey}
+        setSortKey={setSortKey}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+      />
       <span css={todoTransition}>
         <TransitionGroup component={null}>
-          {clientTodoList.map((todo) => (
+          {filteredSortedTodos.map((todo) => (
             <CSSTransition key={todo.id} timeout={1000} classNames="todo" nodeRef={nodeRefs.current[todo.id]} appear>
               <div ref={nodeRefs.current[todo.id]}>
                 <TodoItem data={todo} updateOne={updateOne} deleteOne={deleteOne} styleVariant="hybrid" />
