@@ -1,9 +1,11 @@
 import request from 'supertest';
 import app from './index';
 import { PrismaClient } from '@prisma/client';
+import jwt from 'jsonwebtoken';
 
 let token: string;
 let todoId: string;
+let userId: string;
 const prisma = new PrismaClient();
 
 describe('認証・Todo API統合テスト', () => {
@@ -17,7 +19,12 @@ describe('認証・Todo API統合テスト', () => {
         await request(app).post('/register').send(testUser);
         // ログインしてトークン取得
         const res = await request(app).post('/login').send(testUser);
-        token = res.body.token;
+        token = res.body.data?.token;
+        expect(token).toBeTruthy(); // tokenが取得できているかチェック
+        // JWTからuserIdを取得
+        const decoded: any = jwt.decode(token);
+        userId = decoded?.userId;
+        expect(userId).toBeTruthy(); // userIdが取得できているかチェック
     });
 
     it('トークン無しでTodo取得は401', async () => {
@@ -34,11 +41,12 @@ describe('認証・Todo API統合テスト', () => {
                 description: 'desc',
                 completed: false,
                 priority: 'medium',
-                due_date: '2025-07-01'
+                due_date: '2025-07-01',
+                userId // 明示的にuserIdを送る（API側で上書きされるが型不一致回避のため）
             });
         expect(res.status).toBe(200);
-        expect(res.body.title).toBe('test');
-        todoId = res.body.id;
+        expect(res.body.data.title).toBe('test');
+        todoId = res.body.data.id;
     });
 
     it('自分のTodo取得', async () => {
@@ -46,8 +54,8 @@ describe('認証・Todo API統合テスト', () => {
             .get('/allTodos')
             .set('Authorization', `Bearer ${token}`);
         expect(res.status).toBe(200);
-        expect(Array.isArray(res.body)).toBe(true);
-        expect(res.body[0].title).toBe('test');
+        expect(Array.isArray(res.body.data)).toBe(true);
+        expect(res.body.data[0].title).toBe('test');
     });
 
     it('自分のTodo編集', async () => {
@@ -56,7 +64,7 @@ describe('認証・Todo API統合テスト', () => {
             .set('Authorization', `Bearer ${token}`)
             .send({ title: 'updated', description: 'desc', completed: true, priority: 'high', due_date: '2025-07-02' });
         expect(res.status).toBe(200);
-        expect(res.body.title).toBe('updated');
+        expect(res.body.data.title).toBe('updated');
     });
 
     it('自分のTodo削除', async () => {

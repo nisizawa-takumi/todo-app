@@ -50,28 +50,43 @@ function authenticateToken(req: AuthRequest, res: Response, next: NextFunction) 
     });
 }
 
+// ===================== 共通レスポンス/エラーハンドラ =====================
+
+// レスポンス統一用ヘルパー
+function sendSuccess(res: Response, data: any) {
+    res.json({ success: true, data });
+}
+function sendError(res: Response, error: any, status: number = 400) {
+    res.status(status).json({ success: false, error });
+}
+
+// 共通エラーハンドラーミドルウェア
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    console.error(err);
+    sendError(res, err.message || 'Internal Server Error', err.status || 500);
+});
+
 // ===================== Todo CRUD API =====================
 
 // 認証必須: 自分のTodoのみ取得
-app.get('/allTodos', authenticateToken, async (req: AuthRequest, res) => {
+app.get('/allTodos', authenticateToken, async (req: AuthRequest, res, next) => {
     try {
-        // 認証ユーザーのTodoのみ返す
         const allTodos = await prisma.todo.findMany({ where: { userId: req.user.userId } });
-        res.json(allTodos);
+        sendSuccess(res, allTodos);
     } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
+        next(error);
     }
 });
 
 // 認証必須: 自分のTodoのみ作成
-app.post("/createTodo", authenticateToken, async (req: AuthRequest, res) => {
+app.post("/createTodo", authenticateToken, async (req: AuthRequest, res, next) => {
     try {
-        // 必須項目チェック
         const { title, description, completed, priority, due_date } = req.body;
         if (!title || !description || typeof completed !== 'boolean' || !priority || !due_date) {
-            return res.status(400).json({ error: "必須項目が不足しています" });
+            return sendError(res, "必須項目が不足しています", 400);
         }
-        // 認証ユーザーのTodoとして登録
+        // userIdの確認用ログ
+        console.log('createTodo req.user:', req.user);
         const createTodo = await prisma.todo.create({
             data: {
                 title,
@@ -82,64 +97,57 @@ app.post("/createTodo", authenticateToken, async (req: AuthRequest, res) => {
                 user: { connect: { id: req.user.userId } }
             },
         });
-        res.json(createTodo);
+        sendSuccess(res, createTodo);
     } catch (e) {
-        res.status(400).json(e);
+        next(e);
     }
 });
 
 // 認証必須: 自分のTodoのみ編集可
-app.put("/editTodo/:id", authenticateToken, async (req: AuthRequest, res) => {
+app.put("/editTodo/:id", authenticateToken, async (req: AuthRequest, res, next) => {
     try {
         const id = req.params.id;
         const { title, description, completed, priority, due_date } = req.body;
-        // 対象Todoが自分のものかチェック
         const todo = await prisma.todo.findUnique({ where: { id } });
         if (!todo || todo.userId !== req.user.userId) {
-            return res.status(403).json({ error: "権限がありません" });
+            return sendError(res, "権限がありません", 403);
         }
-        // 更新処理
         const editTodo = await prisma.todo.update({
             where: { id },
             data: { title, description, completed, priority, due_date: new Date(due_date) },
         });
-        res.json(editTodo);
+        sendSuccess(res, editTodo);
     } catch (e) {
-        res.status(400).json(e);
+        next(e);
     }
 });
 
 // 認証必須: 自分のTodoのみ削除可
-app.delete("/deleteTodo/:id", authenticateToken, async (req: AuthRequest, res) => {
+app.delete("/deleteTodo/:id", authenticateToken, async (req: AuthRequest, res, next) => {
     try {
         const id = req.params.id;
-        // 対象Todoが自分のものかチェック
         const todo = await prisma.todo.findUnique({ where: { id } });
         if (!todo || todo.userId !== req.user.userId) {
-            return res.status(403).json({ error: "権限がありません" });
+            return sendError(res, "権限がありません", 403);
         }
-        // 削除処理
         const deleteTodo = await prisma.todo.delete({ where: { id } });
-        res.json(deleteTodo);
+        sendSuccess(res, deleteTodo);
     } catch (e) {
-        res.status(400).json(e);
+        next(e);
     }
 });
 
 // ===================== 一括更新API =====================
-// 認証必須: 自分のTodoのみ一括更新可
-app.post("/bulkUpdateTodos", authenticateToken, async (req: AuthRequest, res) => {
+app.post("/bulkUpdateTodos", authenticateToken, async (req: AuthRequest, res, next) => {
     const todos = req.body.todos;
     if (!Array.isArray(todos)) {
-        return res.status(400).json({ error: "todos配列が必要です" });
+        return sendError(res, "todos配列が必要です", 400);
     }
-    // 各Todoが自分のものかチェック（userIdが一致するものだけ許可）
     for (const todo of todos) {
         if (todo.userId && todo.userId !== req.user.userId) {
-            return res.status(403).json({ error: "自分のTodoのみ一括更新できます" });
+            return sendError(res, "自分のTodoのみ一括更新できます", 403);
         }
     }
-    // 必須フィールドチェック
     for (const todo of todos) {
         if (
             typeof todo.id !== "string" ||
@@ -149,35 +157,31 @@ app.post("/bulkUpdateTodos", authenticateToken, async (req: AuthRequest, res) =>
             typeof todo.priority !== "string" ||
             typeof todo.due_date !== "string"
         ) {
-            return res.status(400).json({ error: "各todoにid, title, description, completed, priority, due_date(ISO8601)が必要です" });
+            return sendError(res, "各todoにid, title, description, completed, priority, due_date(ISO8601)が必要です", 400);
         }
     }
-    // userIdをすべて認証ユーザーのIDに上書き
     const todosForDb = todos.map(todo => ({
         ...todo,
         userId: req.user.userId,
         due_date: new Date(todo.due_date)
     }));
     try {
-        // 自分のTodoのみ全削除→一括登録
         await prisma.$transaction([
             prisma.todo.deleteMany({ where: { userId: req.user.userId } }),
             prisma.todo.createMany({ data: todosForDb })
         ]);
-        res.json({ message: "一括更新完了" });
+        sendSuccess(res, { message: "一括更新完了" });
     } catch (e) {
-        console.error(e);
-        res.status(500).json({ error: "一括更新に失敗しました" });
+        next(e);
     }
 });
 
 // ===================== ユーザー認証API =====================
 
-// ユーザー登録
-app.post('/register', async (req, res) => {
+app.post('/register', async (req, res, next) => {
     const { email, password } = req.body;
     if (!email || !password) {
-        return res.status(400).json({ error: 'emailとpasswordは必須です' });
+        return sendError(res, 'emailとpasswordは必須です', 400);
     }
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -187,49 +191,52 @@ app.post('/register', async (req, res) => {
                 password: hashedPassword
             }
         });
-        res.json({ message: '登録完了', user: { id: user.id, email: user.email } });
+        sendSuccess(res, { message: '登録完了', user: { id: user.id, email: user.email } });
     } catch (e) {
-        res.status(400).json({ error: '登録失敗', detail: e });
+        next(e);
     }
 });
 
-// ログイン
-app.post('/login', async (req, res) => {
+app.post('/login', async (req, res, next) => {
     const { email, password } = req.body;
     if (!email || !password) {
-        return res.status(400).json({ error: 'emailとpasswordは必須です' });
+        return sendError(res, 'emailとpasswordは必須です', 400);
     }
     try {
         const user = await prisma.user.findUnique({ where: { email } });
-        if (!user) return res.status(401).json({ error: 'ユーザーが見つかりません' });
+        if (!user) return sendError(res, 'ユーザーが見つかりません', 401);
 
         const isValid = await bcrypt.compare(password, user.password);
-        if (!isValid) return res.status(401).json({ error: 'パスワードが違います' });
+        if (!isValid) return sendError(res, 'パスワードが違います', 401);
 
-        // JWTトークン発行（roleを除外）
         const token = jwt.sign(
             { userId: user.id },
             JWT_SECRET,
             { expiresIn: '1d' }
         );
-        // JWTをHttpOnly Cookieで返す
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge: 24 * 60 * 60 * 1000 // 1日
+            maxAge: 24 * 60 * 60 * 1000
         });
-        res.json({ message: 'ログイン成功', token });
+        // userIdの確認用ログ
+        console.log('login user.id:', user.id);
+        console.log('login JWT payload:', { userId: user.id });
+        sendSuccess(res, { message: 'ログイン成功', token, userId: user.id });
     } catch (e) {
-        res.status(400).json({ error: 'ログイン失敗', detail: e });
+        next(e);
     }
 });
 
-// 自分のユーザー情報取得（認証必須）
-app.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => {
-    const user = await prisma.user.findUnique({ where: { id: req.user.userId } });
-    if (!user) return res.status(404).json({ error: 'ユーザーが見つかりません' });
-    res.json({ id: user.id, email: user.email });
+app.get('/me', authenticateToken, async (req: AuthRequest, res, next) => {
+    try {
+        const user = await prisma.user.findUnique({ where: { id: req.user.userId } });
+        if (!user) return sendError(res, 'ユーザーが見つかりません', 404);
+        sendSuccess(res, { id: user.id, email: user.email });
+    } catch (e) {
+        next(e);
+    }
 });
 
 // サーバー起動
