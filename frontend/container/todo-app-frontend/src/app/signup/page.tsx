@@ -1,15 +1,17 @@
 "use client";
 import { useState } from "react";
 import { Box, Button, TextField, Typography, Paper } from "@mui/material";
-import { useAuth } from "@/lib/auth/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { signup } from "@/lib/auth/apiClient";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const { signup, loading, error, user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
@@ -18,10 +20,20 @@ export default function SignupPage() {
       alert("パスワードが一致しません");
       return;
     }
-    await signup(email, password);
-    if (user) {
-      router.replace("/todo");
+    setLoading(true);
+    setError(null);
+    try {
+      await signup({ email, password });
+      let redirect = searchParams.get("redirect") || "/todo";
+      // オープンリダイレクト対策: / で始まるパスのみ許可
+      if (!redirect.startsWith("/")) {
+        redirect = "/todo";
+      }
+      router.replace(redirect);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "アカウント作成に失敗しました");
     }
+    setLoading(false);
   }
 
   return (

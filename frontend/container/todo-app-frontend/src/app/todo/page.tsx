@@ -3,9 +3,26 @@ import ToDoList from "@/components/TodoList";
 import { FOOTER_HEIGHT } from "@/components/Footer";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
-import { useAuthGuard } from "@/lib/auth/useAuthGuard";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { checkAuth } from "@/lib/auth/apiClient";
+
 export default function ToDo() {
-  useAuthGuard();
+  const router = useRouter();
+  useEffect(() => {
+    const check = async () => {
+      try {
+        await checkAuth();
+      } catch {
+        // 未認証なら現在のパスをredirectクエリで/loginへ
+        const currentPath = window.location.pathname + window.location.search;
+        const safeRedirect = currentPath.startsWith("/") ? currentPath : "/todo";
+        router.replace(`/login?redirect=${encodeURIComponent(safeRedirect)}`);
+      }
+    };
+    check();
+  }, [router]);
+
   return (
     <Box
       sx={{

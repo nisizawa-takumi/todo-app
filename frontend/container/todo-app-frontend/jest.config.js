@@ -5,7 +5,7 @@ module.exports = {
   transform: {
     "^.+\\.(ts|tsx)$": "ts-jest",
   },
-  testMatch: ["**/__tests__/**/*.(test|spec).(ts|tsx|js)"],
+  testMatch: ["**/*.(test|spec).(ts|tsx|js)"],
   setupFilesAfterEnv: ["@testing-library/jest-dom"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
