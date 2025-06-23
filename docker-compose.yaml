@@ -38,5 +38,28 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
 
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    environment:
+      - OLLAMA_MODELS=qwen:0.5b
+    # 起動後に `ollama run qwen:0.5b` でモデル自動ダウンロード
+
+  llm-api:
+    build: ./llm-scheduler/api
+    working_dir: /app
+    volumes:
+      - ./llm-scheduler/api:/app
+    ports:
+      - "8080:8080"
+    environment:
+      - OLLAMA_API_URL=http://ollama:11434
+    depends_on:
+      - ollama
+
 volumes:
   mysql-data:
+  ollama-data:
