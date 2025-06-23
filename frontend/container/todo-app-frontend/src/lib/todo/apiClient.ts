@@ -2,7 +2,7 @@ import * as jsonserver from "./jsonserver";
 import * as backend from "./backend";
 import { v4 as uuidv4 } from "uuid";
 // 切り替え用フラグ
-const USE_JSONSERVER = false;
+const USE_JSONSERVER = true;
 
 // Todo型: 1つのToDoアイテムを表現する型定義
 export type TodoType = {

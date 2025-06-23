@@ -5,6 +5,7 @@ services:
     working_dir: /container/todo-app-frontend #作業ディレクトリを/containerに設定します。以降のコマンドはこのディレクトリ内で実行されます。
     volumes:
       - ./frontend/container:/container #コンテナ外の./frontend/containerとコンテナ内の/containerを同期
+      - /container/todo-app-frontend/node_modules # node_modulesをボリュームから除外(なんでやっているかあんまわかってない)
     ports:
       - "3000:3000" # nextjsでの開発用ローカルサーバのポート
       - "3001:3001" # json-serverで開発用の一時サーバー(DBの代わり)を使うためのポート

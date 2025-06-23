@@ -1,9 +1,8 @@
-// frontend/container/todo-app-frontend/mocks/server.js
-// json-server + 簡易認証APIモック
+/* eslint-disable  @typescript-eslint/no-require-imports */ //ESLintのrequireを使うなという警告を無効化
 
-import jsonServer from "json-server";
+const jsonServer = require("json-server"); //json-serverがESModules未対応
 const server = jsonServer.create();
-const router = jsonServer.router("dbForDev.json");
+const router = jsonServer.router("./dbForDev.json");
 const middlewares = jsonServer.defaults();
 
 server.use(middlewares);
@@ -28,13 +27,18 @@ server.post("/login", (req, res) => {
 server.post("/signup", (req, res) => {
   const { email, password } = req.body;
   const users = router.db.get("users").value();
-  if (users.find((u) => u.email === email)) {
+  if (users && users.find((u) => u.email === email)) {
     res.status(409).jsonp({ message: "このメールアドレスは既に登録されています" });
     return;
   }
-  const id = users.length ? Math.max(...users.map((u) => u.id)) + 1 : 1;
+  const id = (users ? users.length : 0) ? Math.max(...users.map((u) => u.id)) + 1 : 1;
   const newUser = { id, email, password };
-  router.db.get("users").push(newUser).write();
+  if (router.db.get("users")) {
+    router.db.get("users").push(newUser).write();
+  } else {
+    router.db.set("users", []).write();
+    router.db.get("users").push(newUser).write();
+  }
   res.jsonp({
     token: "dummy-token",
     user: { id, email },

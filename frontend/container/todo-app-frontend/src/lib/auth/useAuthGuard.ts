@@ -11,7 +11,7 @@ import { useAuth } from "@/lib/auth/AuthContext";
 export function useAuthGuard() {
   const { user, loading } = useAuth();
   const router = useRouter();
-
+  console.log(user, loading);
   useEffect(() => {
     if (!loading && !user) {
       router.replace("/login");
