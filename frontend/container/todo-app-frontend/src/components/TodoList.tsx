@@ -54,8 +54,19 @@ export default function ToDoList() {
   const [clientTodoList, setClientTodoList] = useState<TodoType[]>([]);
   const { addOne, updateOne, deleteOne, syncTodos } = useTodoCrud(clientTodoList, setClientTodoList, syncMode);
   const [loading, setLoading] = useState(true);
-  const { searchText, setSearchText, sortKey, setSortKey, sortOrder, setSortOrder, filteredSortedTodos } =
-    useTodoFilterSort(clientTodoList);
+  const {
+    searchText,
+    setSearchText,
+    sortKey,
+    setSortKey,
+    sortOrder,
+    setSortOrder,
+    filteredSortedTodos,
+    completedFilter,
+    setCompletedFilter,
+    priorityFilter,
+    setPriorityFilter,
+  } = useTodoFilterSort(clientTodoList);
   const nodeRefs = useRef<{ [key: string]: React.RefObject<HTMLDivElement | null> }>({});
   clientTodoList.forEach((todo) => {
     if (!nodeRefs.current[todo.id]) {
@@ -92,6 +103,10 @@ export default function ToDoList() {
         setSortKey={setSortKey}
         sortOrder={sortOrder}
         setSortOrder={setSortOrder}
+        completedFilter={completedFilter}
+        setCompletedFilter={setCompletedFilter}
+        priorityFilter={priorityFilter}
+        setPriorityFilter={setPriorityFilter}
       />
       <span css={todoTransition}>
         <TransitionGroup component={null}>

@@ -17,24 +17,34 @@ export function useTodoFilterSort(todos: TodoType[]) {
   const [searchText, setSearchText] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("due_date");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
+  // 新たに追加: 完了状態・優先度のフィルタ
+  const [completedFilter, setCompletedFilter] = useState<"all" | "completed" | "incomplete">("all");
+  const [priorityFilter, setPriorityFilter] = useState<"all" | "high" | "medium" | "low">("all");
 
   const filteredSortedTodos = useMemo(() => {
     const normalizedSearch = normalizeJapanese(searchText);
-    const filtered = todos.filter(
-      (todo) =>
+    const filtered = todos.filter((todo) => {
+      // 検索ワード
+      const matchText =
         normalizeJapanese(todo.title).includes(normalizedSearch) ||
-        normalizeJapanese(todo.description).includes(normalizedSearch)
-    );
+        normalizeJapanese(todo.description).includes(normalizedSearch);
+      // 完了状態フィルタ
+      const matchCompleted =
+        completedFilter === "all" ||
+        (completedFilter === "completed" && todo.completed) ||
+        (completedFilter === "incomplete" && !todo.completed);
+      // 優先度フィルタ
+      const matchPriority = priorityFilter === "all" || todo.priority === priorityFilter;
+      return matchText && matchCompleted && matchPriority;
+    });
     filtered.sort((a, b) => {
       let aValue: string | number | boolean = a[sortKey];
       let bValue: string | number | boolean = b[sortKey];
-      // priorityは独自順序
       if (sortKey === "priority") {
         const order = { high: 2, medium: 1, low: 0 };
         aValue = order[a.priority];
         bValue = order[b.priority];
       }
-      // completedはfalse(未完了)を先に
       if (sortKey === "completed") {
         aValue = a.completed ? 1 : 0;
         bValue = b.completed ? 1 : 0;
@@ -44,7 +54,7 @@ export function useTodoFilterSort(todos: TodoType[]) {
       return 0;
     });
     return filtered;
-  }, [todos, searchText, sortKey, sortOrder]);
+  }, [todos, searchText, sortKey, sortOrder, completedFilter, priorityFilter]);
 
   return {
     searchText,
@@ -54,5 +64,9 @@ export function useTodoFilterSort(todos: TodoType[]) {
     sortOrder,
     setSortOrder,
     filteredSortedTodos,
+    completedFilter,
+    setCompletedFilter,
+    priorityFilter,
+    setPriorityFilter,
   };
 }

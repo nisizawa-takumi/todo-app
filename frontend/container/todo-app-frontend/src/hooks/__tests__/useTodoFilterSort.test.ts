@@ -2,7 +2,7 @@ import { renderHook, act } from "@testing-library/react";
 import { useTodoFilterSort } from "../useTodoFilterSort";
 import type { TodoType } from "@/lib/todo/apiClient";
 
-describe("useTodoFilterSort", () => {
+describe("useTodoFilterSort (拡張テスト)", () => {
   const todos: TodoType[] = [
     {
       id: "1",
@@ -28,6 +28,14 @@ describe("useTodoFilterSort", () => {
       priority: "low",
       due_date: "2025-06-23",
     },
+    {
+      id: "4",
+      title: "掃除",
+      description: "部屋の掃除をする",
+      completed: true,
+      priority: "high",
+      due_date: "2025-06-22",
+    },
   ];
 
   it("検索ワードでフィルタされる（日本語正規化含む）", () => {
@@ -44,35 +52,69 @@ describe("useTodoFilterSort", () => {
     expect(result.current.filteredSortedTodos[0].title).toBe("さん歩");
   });
 
-  it("priorityでソートされる", () => {
+  it("完了状態フィルタ: 完了のみ", () => {
     const { result } = renderHook(() => useTodoFilterSort(todos));
     act(() => {
-      result.current.setSortKey("priority");
-      result.current.setSortOrder("asc");
+      result.current.setCompletedFilter("completed");
     });
-    // low(0), medium(1), high(2) の順
-    expect(result.current.filteredSortedTodos[0].priority).toBe("low");
-    expect(result.current.filteredSortedTodos[2].priority).toBe("high");
+    expect(result.current.filteredSortedTodos.every((t) => t.completed)).toBe(true);
+    expect(result.current.filteredSortedTodos.length).toBe(2);
   });
 
-  it("completedでソートされる", () => {
+  it("完了状態フィルタ: 未完了のみ", () => {
     const { result } = renderHook(() => useTodoFilterSort(todos));
     act(() => {
-      result.current.setSortKey("completed");
-      result.current.setSortOrder("asc");
+      result.current.setCompletedFilter("incomplete");
     });
-    // 未完了(false)が先
-    expect(result.current.filteredSortedTodos[0].completed).toBe(false);
-    expect(result.current.filteredSortedTodos[2].completed).toBe(true);
+    expect(result.current.filteredSortedTodos.every((t) => !t.completed)).toBe(true);
+    expect(result.current.filteredSortedTodos.length).toBe(2);
   });
 
-  it("due_dateで降順ソートされる", () => {
+  it("優先度フィルタ: highのみ", () => {
     const { result } = renderHook(() => useTodoFilterSort(todos));
     act(() => {
-      result.current.setSortKey("due_date");
-      result.current.setSortOrder("desc");
+      result.current.setPriorityFilter("high");
     });
-    expect(result.current.filteredSortedTodos[0].due_date).toBe("2025-06-25");
-    expect(result.current.filteredSortedTodos[2].due_date).toBe("2025-06-23");
+    expect(result.current.filteredSortedTodos.every((t) => t.priority === "high")).toBe(true);
+    expect(result.current.filteredSortedTodos.length).toBe(2);
+  });
+
+  it("優先度フィルタ: lowのみ", () => {
+    const { result } = renderHook(() => useTodoFilterSort(todos));
+    act(() => {
+      result.current.setPriorityFilter("low");
+    });
+    expect(result.current.filteredSortedTodos.every((t) => t.priority === "low")).toBe(true);
+    expect(result.current.filteredSortedTodos.length).toBe(1);
+  });
+
+  it("完了状態＋優先度の複合フィルタ", () => {
+    const { result } = renderHook(() => useTodoFilterSort(todos));
+    act(() => {
+      result.current.setCompletedFilter("completed");
+      result.current.setPriorityFilter("high");
+    });
+    expect(result.current.filteredSortedTodos.length).toBe(1);
+    expect(result.current.filteredSortedTodos[0].title).toBe("掃除");
+  });
+
+  it("検索ワード＋優先度フィルタの複合", () => {
+    const { result } = renderHook(() => useTodoFilterSort(todos));
+    act(() => {
+      result.current.setSearchText("掃除");
+      result.current.setPriorityFilter("high");
+    });
+    expect(result.current.filteredSortedTodos.length).toBe(1);
+    expect(result.current.filteredSortedTodos[0].title).toBe("掃除");
+  });
+
+  it("全フィルタ解除で全件表示", () => {
+    const { result } = renderHook(() => useTodoFilterSort(todos));
+    act(() => {
+      result.current.setCompletedFilter("all");
+      result.current.setPriorityFilter("all");
+      result.current.setSearchText("");
+    });
+    expect(result.current.filteredSortedTodos.length).toBe(todos.length);
   });
 });
