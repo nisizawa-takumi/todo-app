@@ -5,7 +5,7 @@ OLLAMA_API_URL = "http://ollama:11434/api/generate"
 prompt = "次のToDoリストから1日のスケジュール案を日本語で提案してください。\n- 牛乳を買う\n- レポート提出\n- 散歩\n- 掃除"
 
 payload = {
-    "model": "qwen:0.5b",
+    "model": "7shi/ezo-gemma-2-jpn:2b-instruct-q8_0",
     "prompt": prompt,
     "stream": False
 }

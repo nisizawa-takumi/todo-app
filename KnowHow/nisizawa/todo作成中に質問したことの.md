@@ -1,3 +1,58 @@
+# copilot 要約
+
+目次（主要トピック一覧）
+React の useEffect・非同期処理
+ローディング UI の実装（CSS-in-JS, CSS Modules）
+CSS-in-JS と CSS Modules の比較
+@jsxImportSource @emotion/react の仕組み
+React の createContext・useContext の使い方
+ResizeObserver の概要と使い方
+MUI（Material-UI）のカスタマイズ方法
+TypeScript の型ガード・includes の型安全
+React アニメーション（react-transition-group, nodeRef）
+React 18 以降の ref 警告と対策
+フロントエンドの描画原理（DOM 操作と CSS）
+React の CRUD 関数と useState の扱い
+debounce の仕組みと React での使い方
+useMemo・useCallback の違いと使い分け
+Jest でのパス・debounce・非同期テスト
+tsconfig.json の"react-jsx"設定
+Next.js での認証・認可設計（Cookie, JWT, SSR/CSR）
+JWT 認証の仕組みとフロントでの扱い
+Cookie の仕組み・セキュリティ属性・運用注意点
+CSRF とは何かとその対策
+サブドメインの意味と Cookie 共有
+認証・Cookie・CSRF 対策のライブラリ/サービス
+フロントエンドでの Cookie 認証の考え方
+オープンリダイレクトの危険性と対策
+useRouter・useSearchParams の使い方
+要約・概要
+このドキュメントは、React/Next.js を中心としたフロントエンド開発における実践的な Q&A・ノウハウ集です。
+主な内容は以下の通りです。
+
+React の基本と応用
+useEffect の非同期処理、useState やカスタムフックの正しい使い方、CRUD 関数の設計、アニメーション実装（react-transition-group）、debounce の活用法、useMemo・useCallback の違いなど、React 開発の現場でよく出る疑問に答えています。
+
+スタイリング手法の比較
+CSS-in-JS（Emotion）と CSS Modules の違い、メリット・デメリット、MUI コンポーネントのカスタマイズ方法など、モダンなスタイリング手法の選び方・使い分けを解説。
+
+TypeScript の型安全
+型ガード関数や includes の型安全な使い方、Jest でのパスエイリアス設定など、TypeScript での実装上の注意点もカバー。
+
+テスト手法
+debounce を使った非同期処理のテスト方法、Jest のタイマー制御、非同期アサーションの書き方など、実践的なテストノウハウを紹介。
+
+認証・認可・セキュリティ
+Next.js での認証設計（Cookie, JWT, SSR/CSR）、Cookie の仕組み・セキュリティ属性・運用注意点、CSRF/XSS 対策、オープンリダイレクト脆弱性、サブドメインと Cookie 共有、主要な認証ライブラリ・サービスの紹介など、Web アプリのセキュリティ設計に必要な知識を体系的にまとめています。
+
+Next.js のルーティング・パラメータ取得
+useRouter や useSearchParams の使い方、リダイレクト設計、クエリパラメータの受け渡し方法など、Next.js 特有のルーティング設計も解説。
+
+概要（まとめ）
+このファイルは、React/Next.js アプリ開発における「よくある疑問」「つまずきやすいポイント」「セキュリティ設計」「テスト手法」などを Q&A 形式で体系的にまとめた実践ノウハウ集です。
+現場で役立つ具体的なコード例・設計指針・セキュリティ対策・テストのコツなどが網羅されており、フロントエンド開発者が日々直面する課題の解決に役立つ内容となっています。
+特に、認証・認可・Cookie・CSRF・JWT など Web セキュリティの基礎から、React/Next.js の最新 API やテストまで幅広くカバーしているのが特徴です。
+
 # React useEffect に関する質問
 
 ## Q.

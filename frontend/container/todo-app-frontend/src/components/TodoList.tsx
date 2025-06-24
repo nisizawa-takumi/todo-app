@@ -12,6 +12,7 @@ import { useTodoCrud } from "@/hooks/todoCrud";
 import { fetchTodoList } from "@/lib/todo/apiClient";
 import { useTodoFilterSort } from "@/hooks/useTodoFilterSort";
 import TodoSearchSort from "@/components/todoModules/TodoSearchSort";
+import ScheduleSuggestion from "./todoModules/ScheduleSuggestion";
 
 const todoTransition = css`
   .todo-appear {
@@ -108,6 +109,7 @@ export default function ToDoList() {
         priorityFilter={priorityFilter}
         setPriorityFilter={setPriorityFilter}
       />
+      <ScheduleSuggestion todos={filteredSortedTodos.map((todo) => todo.title)} />
       <span css={todoTransition}>
         <TransitionGroup component={null}>
           {filteredSortedTodos.map((todo) => (
