@@ -109,7 +109,7 @@ export default function ToDoList() {
         priorityFilter={priorityFilter}
         setPriorityFilter={setPriorityFilter}
       />
-      <ScheduleSuggestion todos={filteredSortedTodos.map((todo) => todo.title)} />
+      <ScheduleSuggestion todos={filteredSortedTodos} />
       <span css={todoTransition}>
         <TransitionGroup component={null}>
           {filteredSortedTodos.map((todo) => (
