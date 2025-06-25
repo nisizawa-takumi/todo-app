@@ -8,9 +8,12 @@
     "start": "next start",
     "lint": "next lint",
     "storybook": "storybook dev -p 6006 --ci",
-    "json-server": "json-server --watch dbForDev.json --port 3001",
+    "json-server": "node mocks/server.cjs",
     "dev:all": "concurrently \"npm run dev\" \"npm run storybook\" \"npm run json-server\"",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -48,7 +51,8 @@
     "eslint-config-next": "15.3.3",
     "eslint-plugin-storybook": "^9.0.10",
     "jest": "^30.0.0",
-    "json-server": "^1.0.0-beta.3",
+    "jest-environment-jsdom": "^30.0.2",
+    "json-server": "^0.17.4",
     "playwright": "^1.53.0",
     "storybook": "^9.0.10",
     "ts-jest": "^29.4.0",

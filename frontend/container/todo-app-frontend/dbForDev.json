@@ -1,44 +1,163 @@
 {
+  "users": [
+    {
+      "id": 1,
+      "email": "s@e",
+      "password": "a"
+    }
+  ],
   "todos": [
     {
-      "id": "0caa",
-      "title": "ddfghjkl;;",
-      "description": "dfghjmkl; asnfdsgjn;bdljn yaaaaa",
+      "id": "16a73988-dfae-45b1-9ca0-17cf43f9f891",
+      "title": "牛乳を買う",
+      "description": "スーパーで特売の牛乳を購入する。家族の朝食用。牛乳の種類（低脂肪・無脂肪・普通）も確認すること。ポイントカードも忘れずに。",
+      "completed": false,
+      "priority": "medium",
+      "due_date": "2025-06-24"
+    },
+    {
+      "id": "b2e1c2d3-4f5a-6b7c-8d9e-0f1a2b3c4d5e",
+      "title": "レポート提出",
+      "description": "経済学のレポートをメールで提出する。添付ファイルのフォーマット（PDF）とファイル名規則（学籍番号_氏名）を厳守。提出前にスペルチェックと参考文献リストの確認も行うこと。",
       "completed": false,
       "priority": "high",
-      "due_date": ""
+      "due_date": "2025-06-25"
     },
     {
-      "id": "bcef",
-      "title": "sadfghjkl;",
-      "description": "",
-      "completed": true,
+      "id": "c3d4e5f6-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
+      "title": "散歩",
+      "description": "夕方に公園を30分歩く。歩数計アプリで歩数を記録し、健康管理アプリに記録を転記。雨天の場合は室内ストレッチに切り替える。",
+      "completed": false,
+      "priority": "low",
+      "due_date": "2025-06-23"
+    },
+    {
+      "id": "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b",
+      "title": "図書館で本を返却",
+      "description": "借りていた本を図書館に返す。返却期限厳守。ついでに新刊コーナーをチェックし、気になる本があれば借りる。図書カードの残高も確認。",
+      "completed": false,
       "priority": "high",
-      "due_date": "2025-06-01"
+      "due_date": "2025-06-22"
     },
     {
-      "id": "1677",
-      "title": "ssss",
-      "description": "ｄｆｈｇｊｈｇ",
+      "id": "f1a2b3c4-d5e6-7f8a-9b0c-1d2e3f4a5b6c",
+      "title": "会議資料作成（第1部・第2部・第3部）",
+      "description": "来週の全社会議用資料を作成。第1部：業績報告（売上・利益・KPI）、第2部：新規プロジェクト進捗、第3部：質疑応答用FAQ。各部ごとにPowerPointでスライド10枚以上、グラフ・図表・参考資料を必ず挿入。上司レビュー後に修正対応。",
+      "completed": false,
+      "priority": "high",
+      "due_date": "2025-06-27"
+    },
+    {
+      "id": "g2b3c4d5-e6f7-8a9b-0c1d-2e3f4a5b6c7d",
+      "title": "家計簿の記帳・精算・分析",
+      "description": "6月分の家計簿を記帳。レシート整理、クレジット明細照合、現金支出の記録。食費・光熱費・交際費・趣味・医療費などカテゴリごとに集計し、先月比・前年同月比も算出。支出増減の要因分析と来月の予算案作成。",
+      "completed": false,
+      "priority": "medium",
+      "due_date": "2025-06-28"
+    },
+    {
+      "id": "h3c4d5e6-f7a8-9b0c-1d2e-3f4a5b6c7d8e",
+      "title": "健康診断の予約・問診票記入・持ち物準備",
+      "description": "年1回の健康診断。Web予約、問診票の事前記入、保険証・診察券・検尿容器・朝食抜き等の持ち物準備。前日夜9時以降は絶食。検査項目（血液・尿・心電図・視力・聴力・胸部X線）を再確認。",
+      "completed": false,
+      "priority": "high",
+      "due_date": "2025-06-29"
+    },
+    {
+      "id": "i4d5e6f7-a8b9-0c1d-2e3f-4a5b6c7d8e9f",
+      "title": "旅行計画（宿・交通・観光・持ち物リスト作成）",
+      "description": "夏休み旅行の計画。宿泊先の予約、交通手段（新幹線・レンタカー・バス）の比較・手配、観光地のリストアップ、持ち物リスト作成。家族の希望をヒアリングし、予算・日程・天候も考慮。",
+      "completed": false,
+      "priority": "medium",
+      "due_date": "2025-07-05"
+    },
+    {
+      "id": "j5e6f7a8-b9c0-1d2e-3f4a-5b6c7d8e9f0a",
+      "title": "PCバックアップ・OSアップデート・ウイルススキャン",
+      "description": "自宅PCのフルバックアップ（外付けHDD）、OS・アプリのアップデート、ウイルス対策ソフトで全スキャン。バックアップ後はリストアテストも実施。作業手順をメモに残す。",
+      "completed": false,
+      "priority": "low",
+      "due_date": "2025-06-30"
+    },
+    {
+      "id": "k6f7a8b9-c0d1-2e3f-4a5b-6c7d8e9f0a1b",
+      "title": "論文執筆（序論・方法・結果・考察・参考文献）",
+      "description": "学会提出用論文の執筆。序論：背景・目的、方法：データ収集・分析手法、結果：統計解析、考察：意義・課題・今後の展望、参考文献：APAスタイルで20件以上。毎日1セクションずつ進める。",
+      "completed": false,
+      "priority": "high",
+      "due_date": "2025-07-10"
+    },
+    {
+      "id": "l7a8b9c0-d1e2-3f4a-5b6c-7d8e9f0a1b2c",
+      "title": "家族の誕生日パーティー準備（ケーキ・飾り付け・招待状・プレゼント）",
+      "description": "家族の誕生日パーティー。ケーキ予約、部屋の飾り付け、招待状作成・送付、プレゼント選定・購入。アレルギー対応・サプライズ演出も検討。",
+      "completed": false,
+      "priority": "medium",
+      "due_date": "2025-07-02"
+    },
+    {
+      "id": "m8b9c0d1-e2f3-4a5b-6c7d-8e9f0a1b2c3d",
+      "title": "クレジットカード明細確認・不正利用チェック・ポイント交換",
+      "description": "クレジットカードのWeb明細を確認。不正利用がないかチェックし、ポイント有効期限切れ前に交換申請。家計簿アプリにも記録。",
+      "completed": false,
+      "priority": "low",
+      "due_date": "2025-06-28"
+    },
+    {
+      "id": "n9c0d1e2-f3a4-5b6c-7d8e-9f0a1b2c3d4e",
+      "title": "洗濯・掃除・ゴミ出し・片付け（週末まとめて）",
+      "description": "週末の家事。洗濯（色物・白物分け）、掃除（リビング・キッチン・浴室・トイレ）、ゴミ出し（可燃・不燃・資源）、部屋の片付け。洗剤・ゴミ袋の在庫も確認。",
+      "completed": false,
+      "priority": "medium",
+      "due_date": "2025-06-29"
+    },
+    {
+      "id": "o0d1e2f3-a4b5-6c7d-8e9f-0a1b2c3d4e5f",
+      "title": "英語学習（単語・リスニング・スピーキング・ライティング）",
+      "description": "英語学習。単語帳で新出単語50語暗記、リスニング教材1本、スピーキング練習（録音・発音チェック）、ライティング課題提出。学習記録をアプリに残す。",
+      "completed": false,
+      "priority": "high",
+      "due_date": "2025-06-29"
+    },
+    {
+      "id": "p1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a",
+      "title": "ネットショッピング（セール品・日用品・レビュー確認）",
+      "description": "ネットショッピング。セール品のリストアップ、日用品の在庫確認・注文、購入前にレビュー・価格比較。配達日時指定・受取対応も忘れずに。",
+      "completed": false,
+      "priority": "medium",
+      "due_date": "2025-06-27"
+    },
+    {
+      "id": "q2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b",
+      "title": "自転車のメンテナンス（空気入れ・チェーン注油・ブレーキ調整）",
+      "description": "自転車の定期メンテナンス。空気圧チェック・空気入れ、チェーンの注油、ブレーキの効き具合調整。必要ならパーツ交換。作業記録を残す。",
+      "completed": false,
+      "priority": "low",
+      "due_date": "2025-06-29"
+    },
+    {
+      "id": "r3a4b5c6-d7e8-9f0a-1b2c-3d4e5f6a7b8c",
+      "title": "ペットの世話（餌・散歩・トイレ掃除・健康チェック）",
+      "description": "ペット（犬・猫）の世話。餌やり、散歩、トイレ掃除、健康状態チェック。ワクチン接種記録も確認。",
+      "completed": false,
+      "priority": "medium",
+      "due_date": "2025-06-29"
+    },
+    {
+      "id": "s4b5c6d7-e8f9-0a1b-2c3d-4e5f6a7b8c9d",
+      "title": "SNS投稿・コメント返信・写真整理",
+      "description": "SNS（Instagram・X・Facebook）への投稿、コメント返信、写真の整理・アルバム作成。プライバシー設定も見直す。",
+      "completed": false,
+      "priority": "low",
+      "due_date": "2025-06-29"
+    },
+    {
+      "id": "3b263baa-34eb-45a6-83d6-14282a1e8661",
+      "title": "dasdk,hf",
+      "description": "",
       "completed": false,
       "priority": "medium",
       "due_date": ""
-    },
-    {
-      "id": "c02d",
-      "title": "sdafhgdkjghdfjdhfgjfghsfjdhadsfdgjgkjk",
-      "description": "",
-      "completed": true,
-      "priority": "high",
-      "due_date": "2025-06-26"
-    },
-    {
-      "id": "32a0",
-      "title": "wuqihfwblfk",
-      "description": "dd",
-      "completed": false,
-      "priority": "medium",
-      "due_date": "2025-07-09"
     }
   ]
 }

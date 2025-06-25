@@ -52,3 +52,13 @@ export async function updateTodo(id: string, todo: Partial<TodoType>): Promise<T
 export async function deleteTodo(id: string): Promise<void> {
   return USE_JSONSERVER ? jsonserver.deleteTodo(id) : backend.deleteTodo(id);
 }
+
+/**
+ * ToDo一括更新
+ * POST /api/bulkUpdateTodos
+ * @param todos 更新後のTodo配列
+ * @returns サーバーレスポンス（例: { message: string }）
+ */
+export async function bulkUpdateTodos(todos: TodoType[]) {
+  return USE_JSONSERVER ? jsonserver.bulkUpdateTodos(todos) : backend.bulkUpdateTodos(todos);
+}

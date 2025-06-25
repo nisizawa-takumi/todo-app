@@ -10,7 +10,10 @@ import { TransitionGroup, CSSTransition } from "react-transition-group";
 import { css } from "@emotion/react";
 import { useTodoCrud } from "@/hooks/todoCrud";
 import { fetchTodoList } from "@/lib/todo/apiClient";
-
+import { useTodoFilterSort } from "@/hooks/useTodoFilterSort";
+import TodoSearchSort from "@/components/todoModules/TodoSearchSort";
+import ScheduleSuggestion from "./todoModules/ScheduleSuggestion";
+import { TodoErrorDisplay } from "./todoModules/todoErrorHandling";
 const todoTransition = css`
   .todo-appear {
     opacity: 0;
@@ -51,7 +54,21 @@ export default function ToDoList() {
   const [syncMode, setSyncMode] = useState<"api" | "local">("api");
   const [clientTodoList, setClientTodoList] = useState<TodoType[]>([]);
   const { addOne, updateOne, deleteOne, syncTodos } = useTodoCrud(clientTodoList, setClientTodoList, syncMode);
+  console.log(clientTodoList);
   const [loading, setLoading] = useState(true);
+  const {
+    searchText,
+    setSearchText,
+    sortKey,
+    setSortKey,
+    sortOrder,
+    setSortOrder,
+    filteredSortedTodos,
+    completedFilter,
+    setCompletedFilter,
+    priorityFilter,
+    setPriorityFilter,
+  } = useTodoFilterSort(clientTodoList);
   const nodeRefs = useRef<{ [key: string]: React.RefObject<HTMLDivElement | null> }>({});
   clientTodoList.forEach((todo) => {
     if (!nodeRefs.current[todo.id]) {
@@ -66,33 +83,37 @@ export default function ToDoList() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []); //※ ここはリロード時に実行(useEffectの第二引数を空配列にするとそうなる)
-  if (error) {
-    return (
-      <>
-        <div>申し訳ありません。ToDo表示においてエラーが発生しました。</div>
-        <div>問題はページの更新によって解決する場合があります。</div>
-        <div>詳しくは以下のエラーメッセージを参照してください: </div>
-        <div>{error}</div>
-      </>
-    );
-  } else if (loading) {
+  if (loading) {
     return <LoadingSpinner variant="cute" />;
   }
   return (
     <>
       <SyncModeToggle syncMode={syncMode} setSyncMode={setSyncMode} variant="outlined" />
+      <TodoSearchSort
+        searchText={searchText}
+        setSearchText={setSearchText}
+        sortKey={sortKey}
+        setSortKey={setSortKey}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+        completedFilter={completedFilter}
+        setCompletedFilter={setCompletedFilter}
+        priorityFilter={priorityFilter}
+        setPriorityFilter={setPriorityFilter}
+      />
+      <ScheduleSuggestion todos={filteredSortedTodos} />
       <span css={todoTransition}>
         <TransitionGroup component={null}>
-          {clientTodoList.map((todo) => (
+          {filteredSortedTodos.map((todo) => (
             <CSSTransition key={todo.id} timeout={1000} classNames="todo" nodeRef={nodeRefs.current[todo.id]} appear>
               <div ref={nodeRefs.current[todo.id]}>
-                <TodoItem data={todo} updateOne={updateOne} deleteOne={deleteOne} />
+                <TodoItem data={todo} updateOne={updateOne} deleteOne={deleteOne} styleVariant="hybrid" />
               </div>
             </CSSTransition>
           ))}
         </TransitionGroup>
       </span>
-      <AddTaskButton addOne={addOne} />
+      <AddTaskButton addOne={addOne} variant="cool" setError={setError} />
       <div
         onClick={async () => {
           setLoading(true);
@@ -102,6 +123,7 @@ export default function ToDoList() {
       >
         <div>DB同期:</div>
       </div>
+      <TodoErrorDisplay error={error} />
     </>
   );
 }
