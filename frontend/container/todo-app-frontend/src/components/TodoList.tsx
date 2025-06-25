@@ -13,7 +13,7 @@ import { fetchTodoList } from "@/lib/todo/apiClient";
 import { useTodoFilterSort } from "@/hooks/useTodoFilterSort";
 import TodoSearchSort from "@/components/todoModules/TodoSearchSort";
 import ScheduleSuggestion from "./todoModules/ScheduleSuggestion";
-
+import { TodoErrorDisplay } from "./todoModules/todoErrorHandling";
 const todoTransition = css`
   .todo-appear {
     opacity: 0;
@@ -54,6 +54,7 @@ export default function ToDoList() {
   const [syncMode, setSyncMode] = useState<"api" | "local">("api");
   const [clientTodoList, setClientTodoList] = useState<TodoType[]>([]);
   const { addOne, updateOne, deleteOne, syncTodos } = useTodoCrud(clientTodoList, setClientTodoList, syncMode);
+  console.log(clientTodoList);
   const [loading, setLoading] = useState(true);
   const {
     searchText,
@@ -82,16 +83,7 @@ export default function ToDoList() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []); //※ ここはリロード時に実行(useEffectの第二引数を空配列にするとそうなる)
-  if (error) {
-    return (
-      <>
-        <div>申し訳ありません。ToDo表示においてエラーが発生しました。</div>
-        <div>問題はページの更新によって解決する場合があります。</div>
-        <div>詳しくは以下のエラーメッセージを参照してください: </div>
-        <div>{error}</div>
-      </>
-    );
-  } else if (loading) {
+  if (loading) {
     return <LoadingSpinner variant="cute" />;
   }
   return (
@@ -121,7 +113,7 @@ export default function ToDoList() {
           ))}
         </TransitionGroup>
       </span>
-      <AddTaskButton addOne={addOne} variant="cool" />
+      <AddTaskButton addOne={addOne} variant="cool" setError={setError} />
       <div
         onClick={async () => {
           setLoading(true);
@@ -131,6 +123,7 @@ export default function ToDoList() {
       >
         <div>DB同期:</div>
       </div>
+      <TodoErrorDisplay error={error} />
     </>
   );
 }

@@ -32,7 +32,7 @@ describe("AddTaskButton", () => {
   });
 
   it("addOneが失敗した場合setErrorが呼ばれる", async () => {
-    const errorMessage = "追加失敗";
+    const errorMessage = "説明は必須です";
     const mockAddOneReject = jest.fn().mockRejectedValue(new Error(errorMessage));
     render(<AddTaskButton addOne={mockAddOneReject} setError={mockSetError} />);
     fireEvent.change(screen.getByPlaceholderText("タイトル"), { target: { value: "新しいタスク" } });

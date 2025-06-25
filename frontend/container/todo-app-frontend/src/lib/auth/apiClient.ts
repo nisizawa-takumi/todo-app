@@ -1,44 +1,37 @@
-// 認証API連携用のクライアント（仮実装）
-// 本番APIのエンドポイントは適宜修正してください
+// 認証APIクライアントの切り替えラッパー
+// .envや設定で切り替え可能
 
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+import * as backend from "./backend";
+import * as jsonserver from "./jsonserver";
 
-export type AuthResponse = {
-  email: string;
-};
+export type AuthResponse = backend.AuthResponse;
 
+// 切り替え方法: NEXT_PUBLIC_AUTH_MODE=backend or jsonserver
+const mode = process.env.NEXT_PUBLIC_AUTH_MODE || "backend";
+const impl = mode === "jsonserver" ? jsonserver : backend;
+
+/**
+ * ログイン
+ * @param param0 email, password
+ * @returns AuthResponse
+ */
 export async function login({ email, password }: { email: string; password: string }): Promise<AuthResponse> {
-  const res = await fetch(`${baseUrl}/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include", // cookie送信を有効化
-    body: JSON.stringify({ email, password }),
-  });
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || "ログインに失敗しました");
-  }
-  return await res.json();
+  return impl.login({ email, password });
 }
 
+/**
+ * サインアップ
+ * @param param0 email, password
+ * @returns AuthResponse
+ */
 export async function signup({ email, password }: { email: string; password: string }): Promise<AuthResponse> {
-  const res = await fetch(`${baseUrl}/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include", // cookie送信を有効化
-    body: JSON.stringify({ email, password }),
-  });
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || "アカウント作成に失敗しました");
-  }
-  return await res.json();
+  return impl.signup({ email, password });
 }
 
+/**
+ * 認証チェック
+ * @returns AuthResponse
+ */
 export async function checkAuth(): Promise<AuthResponse> {
-  const res = await fetch(`${baseUrl}/me`, {
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error("未認証");
-  return await res.json();
+  return impl.checkAuth();
 }

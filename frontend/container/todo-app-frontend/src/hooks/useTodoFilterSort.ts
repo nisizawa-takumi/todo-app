@@ -14,6 +14,7 @@ function normalizeJapanese(str: string): string {
 }
 
 export function useTodoFilterSort(todos: TodoType[]) {
+  console.log("in useTodoFilterSort", todos);
   const [searchText, setSearchText] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("due_date");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");

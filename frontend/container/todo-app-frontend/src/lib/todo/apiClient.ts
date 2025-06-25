@@ -2,7 +2,7 @@ import * as jsonserver from "./jsonserver";
 import * as backend from "./backend";
 import { v4 as uuidv4 } from "uuid";
 // 切り替え用フラグ
-const USE_JSONSERVER = true;
+const USE_JSONSERVER = false;
 
 // Todo型: 1つのToDoアイテムを表現する型定義
 export type TodoType = {
@@ -51,4 +51,14 @@ export async function updateTodo(id: string, todo: Partial<TodoType>): Promise<T
  */
 export async function deleteTodo(id: string): Promise<void> {
   return USE_JSONSERVER ? jsonserver.deleteTodo(id) : backend.deleteTodo(id);
+}
+
+/**
+ * ToDo一括更新
+ * POST /api/bulkUpdateTodos
+ * @param todos 更新後のTodo配列
+ * @returns サーバーレスポンス（例: { message: string }）
+ */
+export async function bulkUpdateTodos(todos: TodoType[]) {
+  return USE_JSONSERVER ? jsonserver.bulkUpdateTodos(todos) : backend.bulkUpdateTodos(todos);
 }

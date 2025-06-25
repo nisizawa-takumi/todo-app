@@ -1,7 +1,7 @@
-import { createTodo, updateTodo as updateTodoApi, deleteTodo, TodoType } from "@/lib/todo/apiClient";
+import { createTodo, updateTodo as updateTodoApi, deleteTodo, bulkUpdateTodos, TodoType } from "@/lib/todo/apiClient";
 import { v4 as uuidv4 } from "uuid";
-import { MOCK_syncTodoListWithDB } from "../../mocks/expandedJsonServerApi";
 import { TODO_UPDATE_INTERVAL_MS } from "@/constants/timing";
+import { fetchTodoList } from "@/lib/todo/apiClient";
 /** syncMode: "local"（ローカルのみ） or "api"（都度DB同期）
  * 補足:addTodoやupdateOneなどの関数はPromiseを返すので、呼び出し側（コンポーネント）で.catch()やtry-catchでエラーを捕捉できます。
 エラーを捕捉したら、コンポーネント内のerror用state（例：const [error, setError] = useState<string | null>(null)）を更新します。
@@ -49,7 +49,8 @@ export function useTodoCrud(
 
   const syncTodos = async (todosToSync: TodoType[]) => {
     await new Promise((resolve) => setTimeout(resolve, TODO_UPDATE_INTERVAL_MS));
-    setClientTodoList(await MOCK_syncTodoListWithDB(todosToSync));
+    await bulkUpdateTodos(todosToSync);
+    setClientTodoList(await fetchTodoList());
   };
 
   return {

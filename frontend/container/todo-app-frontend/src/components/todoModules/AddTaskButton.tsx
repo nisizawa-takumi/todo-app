@@ -67,6 +67,24 @@ const AddTaskButton: React.FC<AddTaskButtonProps> = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // --- バリデーション ---
+    if (!title.trim()) {
+      setError("タイトルは必須です");
+      return;
+    }
+    if (!description.trim()) {
+      setError("説明は必須です");
+      return;
+    }
+    if (!dueDate) {
+      setError("期限日は必須です");
+      return;
+    }
+    if (!isPriority(priority)) {
+      setError("優先度が不正です");
+      return;
+    }
+    // --- ここまでバリデーション ---
     try {
       await addOne({
         id: uuidv4(),
