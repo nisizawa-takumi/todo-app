@@ -2,13 +2,13 @@ name: todo-app
 services:
   frontend:
     image: node:24.1-bookworm-slim #Node.js 24.1（Debian Bookwormベースの軽量イメージ）をベースにしています。
-    working_dir: /container/todo-app-frontend #作業ディレクトリを/containerに設定します。以降のコマンドはこのディレクトリ内で実行されます。
+    working_dir: /app #作業ディレクトリを/containerに設定します。以降のコマンドはこのディレクトリ内で実行されます。
     volumes:
-      - ./frontend/container:/container #コンテナ外の./frontend/containerとコンテナ内の/containerを同期
+      - ./frontend/app:/app #コンテナ外の./frontend/containerとコンテナ内の/containerを同期
     ports:
-      - "3000:3000" # nextjsでの開発用ローカルサーバのポート
-      - "3001:3001" # json-serverで開発用の一時サーバー(DBの代わり)を使うためのポート
-      - "6006:6006" # storybookでのストーリー確認サイト立ち上げのためのポート
+      - "3000:3000" # Next.js開発サーバー
+      - "3001:3001" # json-server用（必要なら）
+      - "6006:6006" # storybook用
     command: sh -c "npm install && npm run dev:all"
 
   backend:
