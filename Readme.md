@@ -24,21 +24,16 @@ vscode では.md ファイルは右クリックでビューアが開く
    docker compose up -d
    ```
 
-3. 以下のコマンドを実行します。(backend の環境変数の設定)
+3. (ai 機能を使いたいなら)ai をダウンロードします。
+
+   ```sh
+   docker compose exec ollama ollama pull ezo-gemma-2-jpn:2b-instruct-q8_0
+   ```
+
+4. (動かなかったときにやってください)以下のコマンドを実行します。(backend の環境変数の設定)
 
    ```sh
    cp /backend/app/.env.example /backend/app/.env
-   ```
-
-4. [!要確認]DB の作り直し
-   なぜか prisma が DB を開けなかった。作り直したら開けた。
-   参考:
-   ```sh
-   backend-1  | → 22     const allTodos = await prisma.todo.findMany(
-   backend-1  | Error querying the database: Error code 14: Unable to open the database file
-   ```
-   ```sh
-   docker compose exec backend sh -c "cd /app && npx prisma migrate dev --name init"
    ```
 
 ## コンテナの停止
