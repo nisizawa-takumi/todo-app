@@ -24,10 +24,12 @@ vscode では.md ファイルは右クリックでビューアが開く
    docker compose up -d
    ```
 
-3. (ai 機能を使いたいなら)ai をダウンロードします。
+3. (ai 機能を使いたいなら)ai をダウンロードします。重いので注意
+   他に使う ai モデルがあるかもしれません　あんまり見てません
 
    ```sh
    docker compose exec ollama ollama pull ezo-gemma-2-jpn:2b-instruct-q8_0
+   docker compose exec ollama ollama pull gemma3:4b
    ```
 
 4. (動かなかったときにやってください)以下のコマンドを実行します。(backend の環境変数の設定)
