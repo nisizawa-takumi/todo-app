@@ -9,11 +9,13 @@
     "lint": "next lint",
     "storybook": "storybook dev -p 6006 --ci",
     "json-server": "node mocks/server.cjs",
-    "dev:all": "concurrently \"npm run dev\" \"npm run storybook\" \"npm run json-server\"",
+    "dev:all": "concurrently \"npm run dev\" \"npm run storybook\" \"npm run json-server\" \"npm run pw:server\"",
     "build-storybook": "storybook build",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "jest": "jest",
+    "jest:watch": "jest --watch",
+    "jest:coverage": "jest --coverage",
+    "pw:server": "npx playwright show-report --host 0.0.0.0 --port 9323",
+    "pw": "NEXT_PUBLIC_API_BASE=http://backend:4000 playwright test"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

@@ -1,3 +1,3 @@
 export default function Home() {
-  return <div>home画面</div>;
+  return <h1>todo home画面</h1>;
 }

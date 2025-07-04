@@ -1,5 +1,5 @@
 // backend（Express/Prisma API）用の認証APIクライアント
-const baseUrl = "http://localhost:4000";
+const baseUrl = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
 
 export type AuthResponse = {
   email: string;
@@ -20,6 +20,7 @@ export async function login({ email, password }: { email: string; password: stri
 }
 
 export async function signup({ email, password }: { email: string; password: string }): Promise<AuthResponse> {
+  console.log("start signup in front");
   const res = await fetch(`${baseUrl}/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

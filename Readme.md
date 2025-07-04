@@ -12,19 +12,38 @@ vscode では.md ファイルは右クリックでビューアが開く
 
 ## 起動方法
 
+※この起動方法をそのまま copilot に投げても各工程についていい感じの説明をしてくれます。気になる部分は適宜質問して掘り下げてもいいかもしれません。
+
 1. リポジトリのルートディレクトリに移動します。
 
    ```sh
    cd /home/<ubuntuユーザー名>/todo-app
    ```
 
-2. Docker Compose でコンテナを起動します。
+2. フロントエンド用環境変数を設定します。(セキュリティのため、.env ファイルは.gitignore している。)
+   (今はまだないが)今後セキュリティ的に公開できないものがあれば、.env.example には追記しないため、直接西澤から環境変数をもらう必要がある。
+
+   ```sh
+   cp frontend/container/todo-app-frontend/.env.example frontend/container/todo-app-frontend/.env
+   ```
+
+3. Docker Compose でコンテナを起動します。
 
    ```sh
    docker compose up -d
    ```
 
-3. (ai 機能を使いたいなら)ai をダウンロードします。重いので注意
+4. 数分待ちます。
+
+   ```sh
+   docker compose logs -f frontend
+   ```
+
+   このコマンドで、フロントエンドのコンテナの処理のログが見れます。
+   何かが始まったっぽいログが出れば、それでコンテナの立ち上げ完了です。(Storybook 9.0.10 for nextjs-vite started 的なもの)
+   フロントエンドのコンテナの処理が終わっていれば、多分他のコンテナの処理も終わってます。（多分フロントエンドが一番立ち上げ重いため）
+
+5. (ai 機能を使いたいなら)ai をダウンロードします。重いので注意
    他に使う ai モデルがあるかもしれません　あんまり見てません
 
    ```sh
@@ -32,11 +51,17 @@ vscode では.md ファイルは右クリックでビューアが開く
    docker compose exec ollama ollama pull gemma3:4b
    ```
 
-4. (動かなかったときにやってください)以下のコマンドを実行します。(backend の環境変数の設定)
+6. (動かなかったときにやってください)以下のコマンドを実行します。(backend の環境変数の設定)
 
    ```sh
    cp /backend/app/.env.example /backend/app/.env
    ```
+
+## playwright エラー出る件について
+
+いろいろ考えてみたんですが現状の設計だと cookie の受け渡しがクロスオリジンになるせいでうまくテストできなかった、、、他にも原因あったらごめんなさい
+詳細は/todo-app/KnowHow/nisizawa/playwright 勉強したときの.md の下のほう
+あと playwright を実行するときは環境変数の変更が必要です。frontend/container/todo-app-frontend/.env に行ってコメントイン/コメントアウトしたのち、コンテナを立ち上げ直して下さい。(docker compose down/docker compose up -d)
 
 ## コンテナの停止
 
@@ -48,6 +73,9 @@ docker compose down
 
 - コンテナのログ確認:  
   `docker compose logs`
+
+- コンテナの中でターミナルを開く:  
+  `docker compose exec <docker-compose.yml内のservices:直下(「frontend」など)> bash`
 
 ## よくあるトラブル・FAQ
 
