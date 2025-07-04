@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Box, Button, TextField, Typography, Paper } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signup } from "@/lib/auth/apiClient";
+import { login } from "@/lib/auth/apiClient";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -14,6 +15,7 @@ export default function SignupPage() {
   const searchParams = useSearchParams();
 
   async function handleSignup(e: React.FormEvent) {
+    console.log("start handleSignup");
     e.preventDefault();
     if (password !== confirm) {
       // バリデーション
@@ -24,6 +26,7 @@ export default function SignupPage() {
     setError(null);
     try {
       await signup({ email, password });
+      await login({ email, password });
       let redirect = searchParams.get("redirect") || "/todo";
       // オープンリダイレクト対策: / で始まるパスのみ許可
       if (!redirect.startsWith("/")) {
@@ -31,6 +34,7 @@ export default function SignupPage() {
       }
       router.replace(redirect);
     } catch (e) {
+      console.log(e);
       setError(e instanceof Error ? e.message : "アカウント作成に失敗しました");
     }
     setLoading(false);
@@ -44,6 +48,7 @@ export default function SignupPage() {
         </Typography>
         <form onSubmit={handleSignup}>
           <TextField
+            name="email"
             label="メールアドレス"
             type="email"
             value={email}
@@ -54,6 +59,7 @@ export default function SignupPage() {
             autoFocus
           />
           <TextField
+            name="password"
             label="パスワード"
             type="password"
             value={password}
@@ -63,6 +69,7 @@ export default function SignupPage() {
             required
           />
           <TextField
+            name="confirm"
             label="パスワード（確認）"
             type="password"
             value={confirm}

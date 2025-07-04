@@ -1,7 +1,7 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
 /**
- * Read environment variables from file.
+ * 環境変数をファイルから読み込む例。
  * https://github.com/motdotla/dotenv
  */
 // import dotenv from 'dotenv';
@@ -9,47 +9,49 @@ import { defineConfig, devices } from '@playwright/test';
 // dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 /**
- * See https://playwright.dev/docs/test-configuration.
+ * Playwrightのテスト設定については以下を参照。
+ * https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  testDir: './tests',
-  /* Run tests in files in parallel */
+  testDir: "./e2e", // テストファイルを格納するディレクトリ
+  outputDir: "test-results/", // 出力先をtest-results/直下に指定
+  /* テストファイル内のテストを並列で実行 */
   fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
+  /* test.only をソースコードに残したままCIでビルドを失敗させる */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
+  /* CI環境のみリトライ回数を設定 */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
+  /* CI環境では並列ワーカー数を1に制限 */
   workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  /* レポーターの設定。詳細は https://playwright.dev/docs/test-reporters */
+  reporter: "html",
+  /* 以下は全プロジェクト共通の設定。詳細は https://playwright.dev/docs/api/class-testoptions */
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
+    /* `await page.goto('/')` などで使うベースURL */
     // baseURL: 'http://localhost:3000',
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    /* テスト失敗時のリトライ時にトレースを収集。詳細は https://playwright.dev/docs/trace-viewer */
+    trace: "retain-on-failure", // 失敗時にトレースを必ず保存
   },
 
-  /* Configure projects for major browsers */
+  /* 主要ブラウザごとのプロジェクト設定 */
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
     },
 
     {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
     },
 
     {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      name: "webkit",
+      use: { ...devices["Desktop Safari"] },
     },
 
-    /* Test against mobile viewports. */
+    /* モバイル画面サイズでのテスト例 */
     // {
     //   name: 'Mobile Chrome',
     //   use: { ...devices['Pixel 5'] },
@@ -59,7 +61,7 @@ export default defineConfig({
     //   use: { ...devices['iPhone 12'] },
     // },
 
-    /* Test against branded browsers. */
+    /* ブランドブラウザでのテスト例 */
     // {
     //   name: 'Microsoft Edge',
     //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
@@ -70,7 +72,7 @@ export default defineConfig({
     // },
   ],
 
-  /* Run your local dev server before starting the tests */
+  /* テスト開始前にローカル開発サーバーを起動する場合の例 */
   // webServer: {
   //   command: 'npm run start',
   //   url: 'http://localhost:3000',

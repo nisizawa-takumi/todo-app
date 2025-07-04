@@ -1,11 +1,14 @@
 import { TodoType } from "./apiClient";
 
-const API_BASE = "http://localhost:4000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+console.log(API_BASE);
 
 // 全件取得
 export async function fetchTodoList(): Promise<TodoType[]> {
+  console.log("start fetchTodoList in frontend");
   const res = await fetch(`${API_BASE}/allTodos`, { cache: "no-store", credentials: "include" });
   const json = await res.json();
+  console.log(json, "in fetchTodoList");
   if (!res.ok || json.success === false) throw new Error(json.error || "Failed to fetch todos");
   if (!Array.isArray(json.data)) throw new Error("APIレスポンスにdata配列がありません");
   return json.data;
