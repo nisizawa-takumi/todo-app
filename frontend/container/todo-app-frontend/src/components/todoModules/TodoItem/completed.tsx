@@ -151,6 +151,7 @@ const TodoCompleted: React.FC<CompletedCheckboxProps> = ({
           name="completed"
           color="primary"
           size={size}
+          data-testid="todo-completed-checkbox"
           slotProps={{ input: { "aria-label": label } }}
         />
       }

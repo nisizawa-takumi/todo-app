@@ -106,7 +106,7 @@ const StyledCard = styled(Card, {
 
 export default function TodoItem({ data: todoItem, updateOne, deleteOne, styleVariant = "outlined" }: TodoPropsType) {
   return (
-    <StyledCard styleVariant={styleVariant}>
+    <StyledCard styleVariant={styleVariant} data-testid="todo-item">
       <CardContent>
         <Stack spacing={1.5}>
           <TodoTitle todoItem={todoItem} updateOne={updateOne} variant="outlined" />

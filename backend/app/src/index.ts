@@ -23,7 +23,7 @@ app.use(
     origin:
       process.env.NODE_ENV === "production"
         ? "https://your-production-domain.com"
-        : ["http://localhost:3000", "http://127.0.0.1:3000", "http://frontend:3000"],
+        : ["http://localhost:3000", "http://localhost:7777", "http://nginx"],
     credentials: true,
   })
 );
@@ -219,8 +219,8 @@ app.post("/login", async (req, res, next) => {
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "1d" });
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none", //本番では必ず HTTPS ＋ CSRF 対策を行うこと、とのことです(よくわかってない)
+      secure: false,
+      sameSite: "lax",
       maxAge: 24 * 60 * 60 * 1000,
     });
     // userIdの確認用ログ

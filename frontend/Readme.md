@@ -1,15 +1,6 @@
 # コンテナ起動方法
 
-リポジトリ内で、
-
-```bash
-dockcer compose up -d
-```
-
-とするだけ。自動で開発用サーバが立ち上がります。
-http://localhost:3000/で nextjs サイト、http://localhost:6006/で storybook サイトが見れます。
-frontend/container/todo-app-frontend 内のファイルを書き換えると、自動でサイトの情報も書き換わるはず。
-これでうまくいくはずだと思ってますが、行かなかった開発メンバーは連絡して
+このプロジェクト全体に関する(一番上の階層のパスの)readme を参照してください。
 
 # コンテナ内で行った環境構築手順メモ(pull とか clone したものを動かすときはやらなくていいはず。 これはあくまでコンテナ内にプロジェクトが何もなかった時の初期設定手順)
 
@@ -115,14 +106,3 @@ npm install lodash.debounce
 npm install --save-dev @types/lodash.debounce
 npm install --save-dev jest-environment-jsdom
 ```
-
-# 構成(まだかなり雑、変わる可能性高)
-
-```
-todo/
-　├── api.js        // fetchTodos, addTodo, deleteTodo など API 通信
-　├── logic.js      // filterTodos, validateTodo, sortTodos などロジック
-　└── rendering.js  // TodoList, TodoItem, AddTodoForm など UI
-```
-
-json-server を用いたダミー api サーバによる開発、テスト
