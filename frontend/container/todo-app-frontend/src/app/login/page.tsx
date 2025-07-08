@@ -38,6 +38,7 @@ export default function LoginPage() {
         </Typography>
         <form onSubmit={handleLogin}>
           <TextField
+            name="email"
             label="メールアドレス"
             type="email"
             value={email}
@@ -48,6 +49,7 @@ export default function LoginPage() {
             autoFocus
           />
           <TextField
+            name="password"
             label="パスワード"
             type="password"
             value={password}

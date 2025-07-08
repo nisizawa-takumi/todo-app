@@ -57,11 +57,34 @@ vscode では.md ファイルは右クリックでビューアが開く
    cp /backend/app/.env.example /backend/app/.env
    ```
 
-## playwright エラー出る件について
+これで開発用サーバが立ち上がっているはずです。
+http://localhost:7777/で nextjs(フロントエンドの web ページ) サイト、http://localhost:6006/で storybook(UI 部品(コンポーネント)のデザインを見れる)サイトが見れます。
+frontend/container/todo-app-frontend 内のファイルを書き換えると、自動でサイトの情報も書き換わるはず。
+これでうまくいくはずだと思ってますが、行かなかった開発メンバーは連絡して
 
-いろいろ考えてみたんですが現状の設計だと cookie の受け渡しがクロスオリジンになるせいでうまくテストできなかった、、、他にも原因あったらごめんなさい
-詳細は/todo-app/KnowHow/nisizawa/playwright 勉強したときの.md の下のほう
-あと playwright を実行するときは環境変数の変更が必要です。frontend/container/todo-app-frontend/.env に行ってコメントイン/コメントアウトしたのち、コンテナを立ち上げ直して下さい。(docker compose down/docker compose up -d)
+## playwright(全体(e2e)テスト)実行
+
+playwright を実行するときは環境変数の変更が必要です。frontend/container/todo-app-frontend/.env に行ってコメントイン/コメントアウトしたのち、コンテナを立ち上げ直して下さい。(docker compose down してから docker compose up -d)
+
+```sh
+docker compose exec playwright bash
+```
+
+これでコンテナ内に入り、
+
+```sh
+npx playwright test --reporter=html --trace on
+```
+
+これでテストを実行し、
+
+```sh
+npx playwright show-report --host 0.0.0.0 --port 9323
+```
+
+これで結果報告レポート用サーバーを起動します。これにより、localhost:9323/で playwright(全体(e2e)テスト結果レポート)が見れます。
+
+これでテストが走り、localhost:9323/で結果レポートが見れるようになります。
 
 ## コンテナの停止
 

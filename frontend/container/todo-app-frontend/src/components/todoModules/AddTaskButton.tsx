@@ -124,6 +124,7 @@ const AddTaskButton: React.FC<AddTaskButtonProps> = ({
           placeholder="タイトル"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          data-testid="todo-title-input"
           css={css`
             margin: 4px;
             padding: 4px;
@@ -136,6 +137,7 @@ const AddTaskButton: React.FC<AddTaskButtonProps> = ({
           placeholder="説明"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          data-testid="todo-description-input"
           css={css`
             margin: 4px;
             padding: 4px;
@@ -146,6 +148,7 @@ const AddTaskButton: React.FC<AddTaskButtonProps> = ({
           name="priority"
           value={priority}
           onChange={(e) => setPriority(isPriority(e.target.value) ? e.target.value : "medium")}
+          data-testid="todo-priority-select"
           css={css`
             margin: 4px;
             padding: 4px;
@@ -161,6 +164,7 @@ const AddTaskButton: React.FC<AddTaskButtonProps> = ({
           placeholder="期限日"
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
+          data-testid="todo-due-date-input"
           css={css`
             margin: 4px;
             padding: 4px;
@@ -168,6 +172,7 @@ const AddTaskButton: React.FC<AddTaskButtonProps> = ({
         />
         <button
           type="submit"
+          data-testid="todo-add-button"
           css={css`
             margin: 4px;
             padding: ${size === "small" ? 4 : 8}px;

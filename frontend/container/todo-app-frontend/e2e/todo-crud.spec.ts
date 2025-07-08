@@ -6,7 +6,7 @@ test("ToDoCRUD", async ({ page }) => {
   // まずは新規ユーザーでサインアップ＆ログイン
   const uniqueEmail = `cruduser+${Date.now()}@example.com`;
   const password = "password123";
-  await page.goto("http://frontend:3000/signup");
+  await page.goto(`${process.env.FORTEST_BASE_PASS}/signup`);
   await page.fill('input[name="email"]', uniqueEmail);
   await page.fill('input[name="password"]', password);
   await page.fill('input[name="confirm"]', password);
@@ -14,19 +14,35 @@ test("ToDoCRUD", async ({ page }) => {
   await expect(page).toHaveURL(/\/todo/);
 
   // ToDo新規作成
-  await page.fill('input[name="new-todo"]', "Playwrightで追加");
+  const todoTitle = `テストタスク${new Date().toISOString()}`;
+  const todoDescription = "E2Eテスト用説明";
+  const todoDueDate = "2099-12-31";
+  await page.fill('input[name="title"]', todoTitle);
+  await page.fill('input[name="description"]', todoDescription);
+  await page.selectOption('select[name="priority"]', "high");
+  await page.fill('input[name="due_date"]', todoDueDate);
   await page.click('button[type="submit"]');
-  await expect(page.getByText("Playwrightで追加")).toBeVisible();
+  // 追加後、リストに表示されることを確認（data-testidで取得）
+  const todoItem = page.getByTestId("todo-item");
+  await expect(todoItem.getByLabel("タイトル")).toHaveValue(todoTitle);
+  await expect(todoItem).toBeVisible();
 
-  // ToDo編集（例: 編集ボタンがある場合）
-  // await page.click('button[aria-label="edit-Playwrightで追加"]');
-  // await page.fill('input[name="edit-todo"]', "Playwrightで編集");
-  // await page.click('button[type="submit"]');
-  // await expect(page.getByText("Playwrightで編集")).toBeVisible();
+  // ToDo編集（タイトルを変更）
+  const newTitle = todoTitle + "_編集済み";
+  await todoItem.getByLabel("タイトル").fill(newTitle);
+  // 編集は自動保存想定。
+  await expect(todoItem.getByLabel("タイトル")).toHaveValue(newTitle);
+  await expect(page.getByTestId("todo-item").getByLabel("タイトル")).toHaveValue(newTitle);
 
-  // ToDo削除（例: 削除ボタンがある場合）
-  // await page.click('button[aria-label="delete-Playwrightで追加"]');
-  // await expect(page.getByText("Playwrightで追加")).not.toBeVisible();
+  // ToDo完了/未完了切り替え
+  const completedCheckbox = await todoItem.locator('[data-testid="todo-completed-checkbox"]').first(); //MUIのチェックボックスコンポーネント
+  const checkbox_inner = await todoItem.locator('[data-testid="todo-completed-checkbox"] input[type="checkbox"]'); //中身のチェックボックス本体
+  await completedCheckbox.scrollIntoViewIfNeeded();
+  await completedCheckbox.click();
+  await expect(checkbox_inner).toBeChecked({ timeout: 3000 });
 
-  // 必要に応じて完了/未完了切り替えも追加
+  // ToDo削除
+  await todoItem.getByRole("button", { name: "削除" }).dblclick();
+  // 削除後、リストから消えることを確認
+  await expect(page.getByTestId("todo-item").filter({ hasText: newTitle })).not.toBeVisible();
 });
