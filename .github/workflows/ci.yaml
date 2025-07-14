@@ -40,6 +40,24 @@ jobs: # 実行するジョブの定義
             RETRY_COUNT=$((RETRY_COUNT + 1))  # リトライカウンターをインクリメント
           done
 
+      # 診断情報収集
+      - name: Debug container environment # コンテナ環境の診断情報を収集するステップ
+        run: |
+          echo "=== フロントエンドコンテナの作業ディレクトリ確認 ==="
+          docker compose exec -T frontend pwd
+
+          echo "=== package.jsonの確認 ==="
+          docker compose exec -T frontend cat package.json | grep -E 'jest|ts-jest'
+
+          echo "=== node_modulesの確認 ==="
+          docker compose exec -T frontend ls -la node_modules | grep -E 'jest|ts-jest'
+
+          echo "=== Jest設定ファイルの確認 ==="
+          docker compose exec -T frontend cat jest.config.js
+
+          echo "=== npm install実行状況の確認 ==="
+          docker compose logs frontend | grep -E "npm|install"
+
       # フロントエンドのユニットテスト実行
       - name: Run frontend unit tests # フロントエンドのユニットテストを実行するステップ
         run: docker compose exec -T frontend sh -c 'mkdir -p ./test-results-jest && npx jest --json --outputFile=./test-results-jest/jest-results.json'
