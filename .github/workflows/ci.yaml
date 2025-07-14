@@ -63,6 +63,11 @@ jobs: # 実行するジョブの定義
         run: docker compose exec -T frontend sh -c 'mkdir -p ./test-results-jest && npx jest --json --outputFile=./test-results-jest/jest-results.json'
         # -Tはテレタイプ割り当て無効（CIでの実行に必要）(通常、docker compose exec はコンテナ内でコマンドを実行する際に「擬似端末（テレタイプ、TTY）」を割り当てます。しかし、CI環境（GitHub Actionsなど）ではTTYが不要・邪魔になることが多いため、-T オプションで「端末割り当てを無効」にします。これにより、標準入出力がシンプルになり、CIでの自動実行やログ取得が安定します。)
 
+      # バックエンドDBマイグレーション実行
+      - name: Run Prisma migration (dev)
+        run: docker compose exec -T backend npx prisma migrate dev --name ci-init
+        # -TはCI環境用。DBスキーマを最新化
+
       # Playwrightテスト実行
       - name: Run Playwright tests # Playwrightを使ったE2Eテストを実行するステップ
         run: docker compose exec playwright sh -c 'npx playwright test --reporter=html --trace on --output /tests/test-results'
