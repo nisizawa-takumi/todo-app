@@ -18,7 +18,7 @@ jobs: # 実行するジョブの定義
       - name: Set up .env for CI
         run: cp frontend/container/todo-app-frontend/.env.ci frontend/container/todo-app-frontend/.env
       - name: Build and Start containers # Docker Composeを使用してコンテナをビルド・起動するステップ
-        run: docker-compose up -d --build # -dはデタッチモード（バックグラウンド実行）、--buildは毎回イメージをビルド
+        run: docker compose up -d --build # -dはデタッチモード（バックグラウンド実行）、--buildは毎回イメージをビルド
         env: # このステップで使用する環境変数
           FORTEST_BASE_PASS: http://nginx # E2Eテスト用のベースURL
           NEXT_PUBLIC_API_BASE: http://nginx/api # E2Eテスト用のバックエンドURL
@@ -43,7 +43,7 @@ jobs: # 実行するジョブの定義
       # フロントエンドのユニットテスト実行
       - name: Run frontend unit tests # フロントエンドのユニットテストを実行するステップ
         run: docker compose exec -T frontend sh -c 'mkdir -p ./test-results-jest && npx jest --json --outputFile=./test-results-jest/jest-results.json'
-        # -Tはテレタイプ割り当て無効（CIでの実行に必要）(通常、docker-compose exec はコンテナ内でコマンドを実行する際に「擬似端末（テレタイプ、TTY）」を割り当てます。しかし、CI環境（GitHub Actionsなど）ではTTYが不要・邪魔になることが多いため、-T オプションで「端末割り当てを無効」にします。これにより、標準入出力がシンプルになり、CIでの自動実行やログ取得が安定します。)
+        # -Tはテレタイプ割り当て無効（CIでの実行に必要）(通常、docker compose exec はコンテナ内でコマンドを実行する際に「擬似端末（テレタイプ、TTY）」を割り当てます。しかし、CI環境（GitHub Actionsなど）ではTTYが不要・邪魔になることが多いため、-T オプションで「端末割り当てを無効」にします。これにより、標準入出力がシンプルになり、CIでの自動実行やログ取得が安定します。)
 
       # Playwrightテスト実行
       - name: Run Playwright tests # Playwrightを使ったE2Eテストを実行するステップ
@@ -78,4 +78,4 @@ jobs: # 実行するジョブの定義
           echo "::endgroup::"
       - name: Stop containers # テスト完了後にコンテナを停止するステップ
         if: always() # テストが成功しても失敗しても常に実行
-        run: docker-compose down # 全コンテナを停止・削除
+        run: docker compose down # 全コンテナを停止・削除
