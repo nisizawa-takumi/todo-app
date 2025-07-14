@@ -46,6 +46,7 @@ storybook-static
 # Playwright
 node_modules/
 /test-results/
+/test-results-jest/
 /playwright-report/
 /blob-report/
 /playwright/.cache/

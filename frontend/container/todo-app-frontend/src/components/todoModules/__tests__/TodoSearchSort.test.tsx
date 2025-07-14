@@ -12,6 +12,10 @@ describe("TodoSearchSort", () => {
       setSortKey: jest.fn(),
       sortOrder: "asc" as SortOrder,
       setSortOrder: jest.fn(),
+      completedFilter: "all" as "completed" | "all" | "incomplete",
+      setCompletedFilter: jest.fn(),
+      priorityFilter: "all" as "all" | "high" | "medium" | "low",
+      setPriorityFilter: jest.fn(),
       ...overrides,
     };
     render(<TodoSearchSort {...props} />);

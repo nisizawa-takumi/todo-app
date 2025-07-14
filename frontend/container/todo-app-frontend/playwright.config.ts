@@ -24,7 +24,7 @@ export default defineConfig({
   /* CI環境では並列ワーカー数を1に制限 */
   workers: process.env.CI ? 1 : undefined,
   /* レポーターの設定。詳細は https://playwright.dev/docs/test-reporters */
-  reporter: "html",
+  reporter: [["html", { open: "never" }]],
   /* 以下は全プロジェクト共通の設定。詳細は https://playwright.dev/docs/api/class-testoptions */
   use: {
     /* `await page.goto('/')` などで使うベースURL */
