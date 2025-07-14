@@ -29,7 +29,7 @@ jobs: # 実行するジョブの定義
           RETRY_INTERVAL=10  # リトライの間隔（10秒）
           RETRY_COUNT=0  # 現在のリトライ回数を初期化
 
-          while ! curl -s http://localhost:7777/ > /dev/null; do  # フロントエンドへの接続を試み、成功するまで繰り返す
+          while ! curl -s http://localhost:3000/ > /dev/null; do  # フロントエンドへの接続を試み、成功するまで繰り返す
             if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then  # 最大リトライ回数に達した場合
               echo "Frontend service failed to start after $((MAX_RETRIES * RETRY_INTERVAL)) seconds"  # エラーメッセージ
               exit 1  # 失敗して終了（ジョブを失敗として扱う）
