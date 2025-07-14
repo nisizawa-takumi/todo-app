@@ -9,7 +9,7 @@ services:
       - "3000:3000" # nextjsでの開発用ローカルサーバのポート
       - "3001:3001" # json-serverで開発用の一時サーバー(DBの代わり)を使うためのポート
       - "6006:6006" # storybookでのストーリー確認サイト立ち上げのためのポート
-    command: sh -c "npm install && npx playwright install --with-deps && npm run dev:all" # js依存関係install && playwrightブラウザ情報install && 開発用サーバー立ち上げ
+    command: sh -c "npm install && npm run dev:all" # js依存関係install && 開発用サーバー立ち上げ
 
   backend:
     image: node:24.1-bookworm-slim

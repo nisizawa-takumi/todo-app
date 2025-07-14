@@ -1,0 +1,80 @@
+name: CI # このワークフローの名前。GitHub Actionsダッシュボードに表示されます
+
+on: # ワークフローのトリガー設定
+  push: # pushイベントでトリガー
+    branches: [main] # mainブランチへのpushのみ
+  pull_request: # すべてのプルリクエストでもトリガー
+
+jobs: # 実行するジョブの定義
+  test: # 'test'という名前のジョブ
+    runs-on: ubuntu-latest # Ubuntu最新バージョン上で実行
+
+    steps: # ジョブ内で順番に実行される一連のステップ
+      - uses: actions/checkout@v4 # リポジトリをチェックアウトするアクション。v4は使用するバージョン
+
+      - name: Set up Docker Compose # Docker Composeをインストールするステップ
+        run: sudo curl -L "https://github.com/docker/compose/releases/download/v2.38.2/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose
+        # 公式リポジトリからDocker Composeバイナリをダウンロードし、実行権限を付与
+
+      - name: Build and Start containers # Docker Composeを使用してコンテナをビルド・起動するステップ
+        run: docker-compose up -d --build # -dはデタッチモード（バックグラウンド実行）、--buildは毎回イメージをビルド
+        env: # このステップで使用する環境変数
+          FORTEST_BASE_PASS: http://nginx # E2Eテスト用のベースURL
+          NEXT_PUBLIC_API_BASE: http://nginx/api # E2Eテスト用のバックエンドURL
+
+      - name: Wait for frontend to be ready # フロントエンドサービスの準備が整うまで待機するステップ
+        run: | # 複数行のシェルスクリプト
+          MAX_RETRIES=50  # 最大リトライ回数（50回）
+          RETRY_INTERVAL=10  # リトライの間隔（10秒）
+          RETRY_COUNT=0  # 現在のリトライ回数を初期化
+
+          while ! curl -s http://localhost:7777/ > /dev/null; do  # フロントエンドへの接続を試み、成功するまで繰り返す
+            if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then  # 最大リトライ回数に達した場合
+              echo "Frontend service failed to start after $((MAX_RETRIES * RETRY_INTERVAL)) seconds"  # エラーメッセージ
+              exit 1  # 失敗して終了（ジョブを失敗として扱う）
+            fi
+            
+            echo "Waiting for frontend service to be ready..."  # 待機中メッセージ
+            sleep $RETRY_INTERVAL  # 指定された秒数待機
+            RETRY_COUNT=$((RETRY_COUNT + 1))  # リトライカウンターをインクリメント
+          done
+
+      # フロントエンドのユニットテスト実行
+      - name: Run frontend unit tests # フロントエンドのユニットテストを実行するステップ
+        run: docker compose exec -T frontend sh -c 'mkdir -p ./test-results-jest && npx jest --json --outputFile=./test-results-jest/jest-results.json'
+        # -Tはテレタイプ割り当て無効（CIでの実行に必要）(通常、docker-compose exec はコンテナ内でコマンドを実行する際に「擬似端末（テレタイプ、TTY）」を割り当てます。しかし、CI環境（GitHub Actionsなど）ではTTYが不要・邪魔になることが多いため、-T オプションで「端末割り当てを無効」にします。これにより、標準入出力がシンプルになり、CIでの自動実行やログ取得が安定します。)
+
+      # Playwrightテスト実行
+      - name: Run Playwright tests # Playwrightを使ったE2Eテストを実行するステップ
+        run: docker compose exec playwright sh -c 'npx playwright test --reporter=html --trace on --output /tests/test-results'
+        # playwrightコンテナ内でPlaywrightテストを実行
+        env: # このステップで使用する環境変数
+          FORTEST_BASE_PASS: http://nginx # E2Eテスト用のベースURL
+          NEXT_PUBLIC_API_BASE: http://nginx/api # E2Eテスト用のバックエンドURL
+
+      # テスト成果物の保存
+      - name: Upload test artifacts # テスト結果のアーティファクトをアップロードするステップ
+        if: always() # テストが成功しても失敗しても常に実行
+        uses: actions/upload-artifact@v4 # アーティファクトをアップロードするアクション
+        with: # アクションのパラメータ
+          name: test-results # アーティファクトの名前
+          path: | # このパスで指定されたファイルがテスト結果としてアップロードされる
+            frontend/container/todo-app-frontend/playwright-report
+            frontend/container/todo-app-frontend/test-results
+            frontend/container/todo-app-frontend/test-results-jest
+
+      - name: Collect diagnostic information on failure
+        if: ${{ failure() }}
+        run: |
+          echo "::group::Docker Logs"
+          docker compose logs
+          echo "::endgroup::"
+          echo "::group::Container Status"
+          docker compose ps
+          echo "::endgroup::"
+          echo "::group::Network Status"
+          docker network inspect todo-app_default
+          echo "::endgroup::"
+      - name: Stop containers # テスト完了後にコンテナを停止するステップ
+        if: always() # テストが成功しても失敗しても常に実行
+        run: docker-compose down # 全コンテナを停止・削除

@@ -62,6 +62,11 @@ http://localhost:7777/で nextjs(フロントエンドの web ページ) サイ�
 frontend/container/todo-app-frontend 内のファイルを書き換えると、自動でサイトの情報も書き換わるはず。
 これでうまくいくはずだと思ってますが、行かなかった開発メンバーは連絡して
 
+7. 単体テスト実行
+   ```sh
+   docker compose exec frontend npx jest
+   ```
+
 ## playwright(全体(e2e)テスト)実行
 
 playwright を実行するときは環境変数の変更が必要です。frontend/container/todo-app-frontend/.env に行ってコメントイン/コメントアウトしたのち、コンテナを立ち上げ直して下さい。(docker compose down してから docker compose up -d)
