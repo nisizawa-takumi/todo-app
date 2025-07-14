@@ -15,7 +15,8 @@ jobs: # 実行するジョブの定義
       - name: Set up Docker Compose # Docker Composeをインストールするステップ
         run: sudo curl -L "https://github.com/docker/compose/releases/download/v2.38.2/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose
         # 公式リポジトリからDocker Composeバイナリをダウンロードし、実行権限を付与
-
+      - name: Set up .env for CI
+        run: cp frontend/container/todo-app-frontend/.env.ci frontend/container/todo-app-frontend/.env
       - name: Build and Start containers # Docker Composeを使用してコンテナをビルド・起動するステップ
         run: docker-compose up -d --build # -dはデタッチモード（バックグラウンド実行）、--buildは毎回イメージをビルド
         env: # このステップで使用する環境変数
